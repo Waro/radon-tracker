@@ -1,12 +1,163 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus, Search, Filter } from "lucide-react";
+import { RadonCampaignCard, type RadonCampaign } from "@/components/RadonCampaignCard";
+
+// Mock data - in a real app this would come from a database
+const mockCampaigns: RadonCampaign[] = [
+  {
+    id: '1',
+    name: 'Monitoraggio Centro Storico 2024',
+    location: 'Roma, Centro Storico',
+    startDate: '2024-01-15',
+    endDate: '2024-03-15',
+    participantCount: 45,
+    status: 'active',
+    averageLevel: 120,
+    riskLevel: 'medium'
+  },
+  {
+    id: '2',
+    name: 'Indagine Scuole Elementari',
+    location: 'Milano, Zona Porta Garibaldi',
+    startDate: '2024-02-01',
+    participantCount: 15,
+    status: 'completed',
+    averageLevel: 85,
+    riskLevel: 'low'
+  },
+  {
+    id: '3',
+    name: 'Campagna Quartiere Residenziale',
+    location: 'Torino, San Salvario',
+    startDate: '2024-03-10',
+    participantCount: 30,
+    status: 'planned',
+    riskLevel: 'low'
+  },
+  {
+    id: '4',
+    name: 'Monitoraggio Zona Industriale',
+    location: 'Napoli, Area Industriale',
+    startDate: '2023-12-01',
+    endDate: '2024-01-31',
+    participantCount: 25,
+    status: 'completed',
+    averageLevel: 180,
+    riskLevel: 'high'
+  }
+];
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [campaigns] = useState<RadonCampaign[]>(mockCampaigns);
+
+  const filteredCampaigns = campaigns.filter(campaign =>
+    campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    campaign.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleCampaignClick = (campaign: RadonCampaign) => {
+    // Navigate to campaign details - for now just log
+    console.log('Opening campaign:', campaign.name);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card">
+        <div className="container mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Campagne Radon</h1>
+              <p className="text-muted-foreground mt-1">
+                Gestisci le tue campagne di monitoraggio del radon
+              </p>
+            </div>
+            <Button 
+              onClick={() => navigate('/create-campaign')}
+              className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              style={{ background: 'var(--gradient-primary)' }}
+            >
+              <Plus className="h-4 w-4" />
+              Nuova Campagna
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-8">
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Cerca campagne..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button variant="outline" className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            Filtri
+          </Button>
+        </div>
+
+        {/* Statistics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-card p-4 rounded-lg border border-border" style={{ boxShadow: 'var(--shadow-card)' }}>
+            <p className="text-sm text-muted-foreground">Totale Campagne</p>
+            <p className="text-2xl font-bold text-card-foreground">{campaigns.length}</p>
+          </div>
+          <div className="bg-card p-4 rounded-lg border border-border" style={{ boxShadow: 'var(--shadow-card)' }}>
+            <p className="text-sm text-muted-foreground">In Corso</p>
+            <p className="text-2xl font-bold text-accent">
+              {campaigns.filter(c => c.status === 'active').length}
+            </p>
+          </div>
+          <div className="bg-card p-4 rounded-lg border border-border" style={{ boxShadow: 'var(--shadow-card)' }}>
+            <p className="text-sm text-muted-foreground">Completate</p>
+            <p className="text-2xl font-bold text-success">
+              {campaigns.filter(c => c.status === 'completed').length}
+            </p>
+          </div>
+          <div className="bg-card p-4 rounded-lg border border-border" style={{ boxShadow: 'var(--shadow-card)' }}>
+            <p className="text-sm text-muted-foreground">Partecipanti Totali</p>
+            <p className="text-2xl font-bold text-card-foreground">
+              {campaigns.reduce((sum, c) => sum + c.participantCount, 0)}
+            </p>
+          </div>
+        </div>
+
+        {/* Campaigns Grid */}
+        {filteredCampaigns.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCampaigns.map(campaign => (
+              <RadonCampaignCard
+                key={campaign.id}
+                campaign={campaign}
+                onClick={() => handleCampaignClick(campaign)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">Nessuna campagna trovata</p>
+            <Button 
+              onClick={() => navigate('/create-campaign')}
+              className="mt-4 flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Crea la tua prima campagna
+            </Button>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
