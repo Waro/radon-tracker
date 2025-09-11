@@ -33,7 +33,7 @@ const CreateCampaign = () => {
   });
 
   const [dosimetri, setDosimetri] = useState([
-    { id: 1, codiceDispositivo1: '', codiceDispositivo2: '', pianoUbicazione: '' }
+    { id: 1, codiceDispositivo1: '', codiceDispositivo2: '', piano: '', ubicazione: '' }
   ]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -79,7 +79,8 @@ const CreateCampaign = () => {
       id: newId, 
       codiceDispositivo1: '', 
       codiceDispositivo2: '', 
-      pianoUbicazione: '' 
+      piano: '',
+      ubicazione: ''
     }]);
   };
 
@@ -352,7 +353,7 @@ const CreateCampaign = () => {
                       )}
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div className="space-y-2">
                         <Label>Codice Dispositivo 1</Label>
                         <Input
@@ -370,11 +371,19 @@ const CreateCampaign = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Piano ed Ubicazione</Label>
+                        <Label>Piano</Label>
                         <Input
-                          value={dosimetro.pianoUbicazione}
-                          onChange={(e) => handleDosimetroChange(dosimetro.id, 'pianoUbicazione', e.target.value)}
-                          placeholder="Piano e ubicazione"
+                          value={dosimetro.piano}
+                          onChange={(e) => handleDosimetroChange(dosimetro.id, 'piano', e.target.value)}
+                          placeholder="Piano"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Ubicazione</Label>
+                        <Input
+                          value={dosimetro.ubicazione}
+                          onChange={(e) => handleDosimetroChange(dosimetro.id, 'ubicazione', e.target.value)}
+                          placeholder="Ubicazione"
                         />
                       </div>
                     </div>
