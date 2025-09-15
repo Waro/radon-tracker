@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
 
-interface Phase1Data {
+interface Phase2Data {
   dataInizio: string;
   dataFine: string;
   tecnicoNome: string;
@@ -17,26 +17,37 @@ interface Phase1Data {
   referenteFirma: string;
 }
 
-interface Dosimetro {
+interface Dosimetro2 {
   id: number;
-  codiceDispositivo1: string;
+  codiceDispositivo2: string;
   piano: string;
   ubicazione: string;
 }
 
-interface Phase1FormProps {
-  data: Phase1Data;
-  onChange: (field: keyof Phase1Data, value: string) => void;
+interface Phase2FormProps {
+  data: Phase2Data;
+  onChange: (field: keyof Phase2Data, value: string) => void;
   onBack: () => void;
-  onNext: (dosimetri: Dosimetro[]) => void;
+  onSave: (dosimetri: Dosimetro2[]) => void;
+  phase1Dosimetri: Array<{
+    id: number;
+    codiceDispositivo1: string;
+    piano: string;
+    ubicazione: string;
+  }>;
 }
 
-export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) => {
-  const [dosimetri, setDosimetri] = useState<Dosimetro[]>([
-    { id: 1, codiceDispositivo1: '', piano: '', ubicazione: '' }
-  ]);
+export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: Phase2FormProps) => {
+  const [dosimetri, setDosimetri] = useState<Dosimetro2[]>(
+    phase1Dosimetri.map(d => ({
+      id: d.id,
+      codiceDispositivo2: '',
+      piano: d.piano,
+      ubicazione: d.ubicazione
+    }))
+  );
 
-  const handleDosimetroChange = (id: number, field: keyof Dosimetro, value: string) => {
+  const handleDosimetroChange = (id: number, field: keyof Dosimetro2, value: string) => {
     setDosimetri(prev => 
       prev.map(dosimetro => 
         dosimetro.id === id ? { ...dosimetro, [field]: value } : dosimetro
@@ -48,7 +59,7 @@ export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) 
     const newId = Math.max(...dosimetri.map(d => d.id)) + 1;
     setDosimetri(prev => [...prev, { 
       id: newId, 
-      codiceDispositivo1: '', 
+      codiceDispositivo2: '', 
       piano: '',
       ubicazione: ''
     }]);
@@ -62,16 +73,16 @@ export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNext(dosimetri);
+    onSave(dosimetri);
   };
 
   return (
     <div className="space-y-6">
-      {/* Scheda Posizionamento Fase 1 */}
+      {/* Scheda Posizionamento Fase 2 */}
       <Card className="max-w-4xl mx-auto p-8">
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-foreground border-b border-border pb-2">
-            Posizionamento Fase 1
+            Posizionamento Fase 2
           </h2>
 
           <div className="space-y-4">
@@ -215,10 +226,10 @@ export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) 
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Codice Dispositivo 1</Label>
+                    <Label>Codice Dispositivo 2</Label>
                     <Input
-                      value={dosimetro.codiceDispositivo1}
-                      onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo1', e.target.value)}
+                      value={dosimetro.codiceDispositivo2}
+                      onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', e.target.value)}
                       placeholder="Codice dispositivo"
                     />
                   </div>
@@ -263,7 +274,7 @@ export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) 
               className="flex-1 flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              Concludi Fase 1
+              Concludi Campagna
             </Button>
           </div>
         </form>

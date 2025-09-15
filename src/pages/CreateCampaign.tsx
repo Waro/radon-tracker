@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { CampaignDataForm } from "@/components/campaign/CampaignDataForm";
 import { Phase1Form } from "@/components/campaign/Phase1Form";
+import { Phase2Form } from "@/components/campaign/Phase2Form";
 
 const CreateCampaign = () => {
   const navigate = useNavigate();
@@ -24,7 +25,8 @@ const CreateCampaign = () => {
   });
 
   const [phase1Data, setPhase1Data] = useState({
-    dataFase1: '',
+    dataInizio: '',
+    dataFine: '',
     tecnicoNome: '',
     tecnicoCognome: '',
     tecnicoFirma: '',
@@ -34,6 +36,20 @@ const CreateCampaign = () => {
     referenteFirma: ''
   });
 
+  const [phase2Data, setPhase2Data] = useState({
+    dataInizio: '',
+    dataFine: '',
+    tecnicoNome: '',
+    tecnicoCognome: '',
+    tecnicoFirma: '',
+    referenteNome: '',
+    referenteCognome: '',
+    referenteRuolo: '',
+    referenteFirma: ''
+  });
+
+  const [phase1Dosimetri, setPhase1Dosimetri] = useState<any[]>([]);
+
   const handleCampaignDataChange = (field: keyof typeof campaignData, value: string) => {
     setCampaignData(prev => ({ ...prev, [field]: value }));
   };
@@ -42,27 +58,46 @@ const CreateCampaign = () => {
     setPhase1Data(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePhase2DataChange = (field: keyof typeof phase2Data, value: string) => {
+    setPhase2Data(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleNextStep = () => {
     setCurrentStep(2);
   };
 
   const handleBackStep = () => {
-    setCurrentStep(1);
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    } else if (currentStep === 3) {
+      setCurrentStep(2);
+    }
   };
 
-  const handleSaveCampaign = (dosimetri: any[]) => {
+  const handlePhase1Complete = (dosimetri: any[]) => {
+    setPhase1Dosimetri(dosimetri);
+    setCurrentStep(3);
+  };
+
+  const handleSaveCampaign = (dosimetri2: any[]) => {
     // Here you would typically save to a database
     const fullCampaignData = {
       ...campaignData,
-      ...phase1Data,
-      dosimetri
+      phase1: {
+        ...phase1Data,
+        dosimetri: phase1Dosimetri
+      },
+      phase2: {
+        ...phase2Data,
+        dosimetri: dosimetri2
+      }
     };
     
     console.log('Saving campaign:', fullCampaignData);
     
     toast({
       title: "Successo",
-      description: "Campagna creata con successo"
+      description: "Campagna completata con successo"
     });
     
     navigate('/');
@@ -107,7 +142,17 @@ const CreateCampaign = () => {
             data={phase1Data}
             onChange={handlePhase1DataChange}
             onBack={handleBackStep}
+            onNext={handlePhase1Complete}
+          />
+        )}
+        
+        {currentStep === 3 && (
+          <Phase2Form
+            data={phase2Data}
+            onChange={handlePhase2DataChange}
+            onBack={handleBackStep}
             onSave={handleSaveCampaign}
+            phase1Dosimetri={phase1Dosimetri}
           />
         )}
       </main>
