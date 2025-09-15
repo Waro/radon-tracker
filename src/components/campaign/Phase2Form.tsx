@@ -22,6 +22,7 @@ interface Dosimetro2 {
   codiceDispositivo2: string;
   piano: string;
   ubicazione: string;
+  foto: File[];
 }
 
 interface Phase2FormProps {
@@ -34,6 +35,7 @@ interface Phase2FormProps {
     codiceDispositivo1: string;
     piano: string;
     ubicazione: string;
+    foto: File[];
   }>;
 }
 
@@ -43,9 +45,11 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
       id: d.id,
       codiceDispositivo2: '',
       piano: d.piano,
-      ubicazione: d.ubicazione
+      ubicazione: d.ubicazione,
+      foto: []
     }))
   );
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleDosimetroChange = (id: number, field: keyof Dosimetro2, value: string) => {
     setDosimetri(prev => 
@@ -61,7 +65,8 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
       id: newId, 
       codiceDispositivo2: '', 
       piano: '',
-      ubicazione: ''
+      ubicazione: '',
+      foto: []
     }]);
   };
 
@@ -71,8 +76,47 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
     }
   };
 
+  const handleFotoChange = (id: number, files: FileList | null) => {
+    if (files) {
+      const fileArray = Array.from(files);
+      if (fileArray.length > 3) {
+        setErrors(prev => ({ ...prev, [`foto_${id}`]: 'Massimo 3 foto per dosimetro' }));
+        return;
+      }
+      setErrors(prev => ({ ...prev, [`foto_${id}`]: '' }));
+      setDosimetri(prev => 
+        prev.map(dosimetro => 
+          dosimetro.id === id ? { ...dosimetro, foto: fileArray } : dosimetro
+        )
+      );
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // Validazione dosimetri
+    dosimetri.forEach(dosimetro => {
+      if (!dosimetro.codiceDispositivo2) {
+        newErrors[`codice_${dosimetro.id}`] = 'Campo obbligatorio';
+      }
+      if (dosimetro.foto.length === 0) {
+        newErrors[`foto_${dosimetro.id}`] = 'Almeno una foto è obbligatoria';
+      }
+    });
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
+    
+    // Auto-compila data fine con data odierna
+    const today = new Date().toISOString().split('T')[0];
+    onChange('dataFine', today);
+    
     onSave(dosimetri);
   };
 
@@ -103,7 +147,10 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
                   type="date"
                   value={data.dataFine}
                   onChange={(e) => onChange('dataFine', e.target.value)}
+                  disabled
+                  className="bg-muted"
                 />
+                <p className="text-xs text-muted-foreground">Si compila automaticamente</p>
               </div>
             </div>
 
@@ -224,30 +271,55 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
                   )}
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Codice Dispositivo 2</Label>
-                    <Input
-                      value={dosimetro.codiceDispositivo2}
-                      onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', e.target.value)}
-                      placeholder="Codice dispositivo"
-                    />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Codice Dispositivo 2 *</Label>
+                      <Input
+                        value={dosimetro.codiceDispositivo2}
+                        onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', e.target.value)}
+                        placeholder="Codice dispositivo"
+                        className={errors[`codice_${dosimetro.id}`] ? 'border-destructive' : ''}
+                      />
+                      {errors[`codice_${dosimetro.id}`] && (
+                        <p className="text-sm text-destructive">{errors[`codice_${dosimetro.id}`]}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Piano</Label>
+                      <Input
+                        value={dosimetro.piano}
+                        onChange={(e) => handleDosimetroChange(dosimetro.id, 'piano', e.target.value)}
+                        placeholder="Piano"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Ubicazione</Label>
+                      <Input
+                        value={dosimetro.ubicazione}
+                        onChange={(e) => handleDosimetroChange(dosimetro.id, 'ubicazione', e.target.value)}
+                        placeholder="Ubicazione"
+                      />
+                    </div>
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label>Piano</Label>
+                    <Label>Foto (1-3 foto) *</Label>
                     <Input
-                      value={dosimetro.piano}
-                      onChange={(e) => handleDosimetroChange(dosimetro.id, 'piano', e.target.value)}
-                      placeholder="Piano"
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => handleFotoChange(dosimetro.id, e.target.files)}
+                      className={errors[`foto_${dosimetro.id}`] ? 'border-destructive' : ''}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Ubicazione</Label>
-                    <Input
-                      value={dosimetro.ubicazione}
-                      onChange={(e) => handleDosimetroChange(dosimetro.id, 'ubicazione', e.target.value)}
-                      placeholder="Ubicazione"
-                    />
+                    {errors[`foto_${dosimetro.id}`] && (
+                      <p className="text-sm text-destructive">{errors[`foto_${dosimetro.id}`]}</p>
+                    )}
+                    {dosimetro.foto.length > 0 && (
+                      <div className="text-sm text-muted-foreground">
+                        {dosimetro.foto.length} foto selezionate: {dosimetro.foto.map(f => f.name).join(', ')}
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>

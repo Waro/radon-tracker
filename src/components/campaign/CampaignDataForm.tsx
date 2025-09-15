@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface CampaignData {
   commessa: string;
@@ -25,18 +26,25 @@ interface CampaignDataFormProps {
 }
 
 export const CampaignDataForm = ({ data, onChange, onNext, onCancel }: CampaignDataFormProps) => {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
     
-    // Basic validation
-    if (!data.commessa || !data.cliente || !data.citta) {
-      return;
-    }
+    if (!data.commessa) newErrors.commessa = 'Campo obbligatorio';
+    if (!data.cliente) newErrors.cliente = 'Campo obbligatorio';  
+    if (!data.citta) newErrors.citta = 'Campo obbligatorio';
     
-    onNext();
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const isValid = data.commessa && data.cliente && data.citta;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onNext();
+    }
+  };
 
   return (
     <Card className="max-w-4xl mx-auto p-8">
@@ -53,8 +61,9 @@ export const CampaignDataForm = ({ data, onChange, onNext, onCancel }: CampaignD
               value={data.commessa}
               onChange={(e) => onChange('commessa', e.target.value)}
               placeholder="Numero commessa"
-              required
+              className={errors.commessa ? 'border-destructive' : ''}
             />
+            {errors.commessa && <p className="text-sm text-destructive">{errors.commessa}</p>}
           </div>
 
           <div className="space-y-2">
@@ -64,8 +73,9 @@ export const CampaignDataForm = ({ data, onChange, onNext, onCancel }: CampaignD
               value={data.cliente}
               onChange={(e) => onChange('cliente', e.target.value)}
               placeholder="Nome cliente"
-              required
+              className={errors.cliente ? 'border-destructive' : ''}
             />
+            {errors.cliente && <p className="text-sm text-destructive">{errors.cliente}</p>}
           </div>
 
           <div className="space-y-2">
@@ -85,8 +95,9 @@ export const CampaignDataForm = ({ data, onChange, onNext, onCancel }: CampaignD
               value={data.citta}
               onChange={(e) => onChange('citta', e.target.value)}
               placeholder="Città"
-              required
+              className={errors.citta ? 'border-destructive' : ''}
             />
+            {errors.citta && <p className="text-sm text-destructive">{errors.citta}</p>}
           </div>
 
           <div className="space-y-2">
@@ -147,17 +158,17 @@ export const CampaignDataForm = ({ data, onChange, onNext, onCancel }: CampaignD
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="flex-1"
+            className="flex-1 flex items-center gap-2"
           >
+            <ArrowLeft className="h-4 w-4" />
             Annulla
           </Button>
           <Button 
             type="submit"
-            disabled={!isValid}
             className="flex-1 flex items-center gap-2"
           >
-            Continua
             <ArrowRight className="h-4 w-4" />
+            Continua
           </Button>
         </div>
       </form>
