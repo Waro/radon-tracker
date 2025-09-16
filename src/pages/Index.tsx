@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, LogOut, User } from "lucide-react";
 import { RadonCampaignCard, type RadonCampaign } from "@/components/RadonCampaignCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data - in a real app this would come from a database
 const mockCampaigns: RadonCampaign[] = [
@@ -52,8 +54,18 @@ const mockCampaigns: RadonCampaign[] = [
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [campaigns] = useState<RadonCampaign[]>(mockCampaigns);
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logout effettuato",
+      description: "Sei stato disconnesso con successo"
+    });
+  };
 
   const filteredCampaigns = campaigns.filter(campaign =>
     campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,14 +89,28 @@ const Index = () => {
                 Gestisci le tue campagne di monitoraggio del radon
               </p>
             </div>
-            <Button 
-              onClick={() => navigate('/create-campaign')}
-              className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              style={{ background: 'var(--gradient-primary)' }}
-            >
-              <Plus className="h-4 w-4" />
-              Nuova Campagna
-            </Button>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>Benvenuto, {user?.name}</span>
+              </div>
+              <Button 
+                onClick={() => navigate('/create-campaign')}
+                className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                style={{ background: 'var(--gradient-primary)' }}
+              >
+                <Plus className="h-4 w-4" />
+                Nuova Campagna
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleLogout}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>
