@@ -62,7 +62,7 @@ export const RadonCampaignCard = ({ campaign, onClick }: RadonCampaignCardProps)
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
             <div className="text-sm">
@@ -78,6 +78,21 @@ export const RadonCampaignCard = ({ campaign, onClick }: RadonCampaignCardProps)
             <div className="text-sm">
               <p className="text-muted-foreground">Partecipanti</p>
               <p className="font-medium text-card-foreground">{campaign.participantCount}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-warning" />
+            <div className="text-sm">
+              <p className="text-muted-foreground">Ritiro</p>
+              <p className="font-medium text-warning">
+                {(() => {
+                  const start = new Date(campaign.startDate);
+                  const pickup = new Date(start);
+                  pickup.setMonth(pickup.getMonth() + 6);
+                  return pickup.toLocaleDateString('it-IT');
+                })()}
+              </p>
             </div>
           </div>
         </div>

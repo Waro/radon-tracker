@@ -73,8 +73,7 @@ const Index = () => {
   );
 
   const handleCampaignClick = (campaign: RadonCampaign) => {
-    // Navigate to campaign details - for now just log
-    console.log('Opening campaign:', campaign.name);
+    navigate(`/campaign/${campaign.id}`);
   };
 
   return (
