@@ -8,7 +8,6 @@ export interface RadonCampaign {
   location: string;
   startDate: string;
   endDate?: string;
-  participantCount: number;
   status: 'active' | 'completed' | 'planned' | 'suspended';
   averageLevel?: number; // Bq/m³
   riskLevel: 'low' | 'medium' | 'high';
@@ -62,7 +61,7 @@ export const RadonCampaignCard = ({ campaign, onClick }: RadonCampaignCardProps)
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
             <div className="text-sm">
@@ -70,14 +69,6 @@ export const RadonCampaignCard = ({ campaign, onClick }: RadonCampaignCardProps)
               <p className="font-medium text-card-foreground">
                 {new Date(campaign.startDate).toLocaleDateString('it-IT')}
               </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <div className="text-sm">
-              <p className="text-muted-foreground">Partecipanti</p>
-              <p className="font-medium text-card-foreground">{campaign.participantCount}</p>
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
+import { BarcodeScanner } from "../BarcodeScanner";
 
 interface Phase1Data {
   dataInizio: string;
@@ -271,12 +272,17 @@ export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label>Codice Dispositivo 1 *</Label>
-                      <Input
-                        value={dosimetro.codiceDispositivo1}
-                        onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo1', e.target.value)}
-                        placeholder="Codice dispositivo"
-                        className={errors[`codice_${dosimetro.id}`] ? 'border-destructive' : ''}
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          value={dosimetro.codiceDispositivo1}
+                          onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo1', e.target.value)}
+                          placeholder="Codice dispositivo"
+                          className={errors[`codice_${dosimetro.id}`] ? 'border-destructive' : ''}
+                        />
+                        <BarcodeScanner 
+                          onScan={(code) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo1', code)}
+                        />
+                      </div>
                       {errors[`codice_${dosimetro.id}`] && (
                         <p className="text-sm text-destructive">{errors[`codice_${dosimetro.id}`]}</p>
                       )}

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Download, MapPin, CalendarDays, Users, AlertTriangle, Activity, Package } from "lucide-react";
+import { ArrowLeft, Download, MapPin, CalendarDays, AlertTriangle, Activity, Package, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -17,11 +17,10 @@ const mockCampaignDetails = {
     location: 'Roma, Centro Storico',
     startDate: '2024-01-15',
     endDate: '2024-03-15',
-    participantCount: 45,
     status: 'active' as const,
     averageLevel: 120,
     riskLevel: 'medium' as const,
-    currentPhase: 'phase1',
+    currentPhase: 'phase2',
     phases: {
       phase1: {
         name: 'Posizionamento Dosimetri',
@@ -227,7 +226,7 @@ const CampaignDetail = () => {
       <main className="container mx-auto px-6 py-8">
         <div id="campaign-report">
           {/* Campaign Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
@@ -255,18 +254,6 @@ const CampaignDetail = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Partecipanti</p>
-                    <p className="font-semibold">{campaign.participantCount}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
                   <AlertTriangle className={`h-5 w-5 ${riskColors[campaign.riskLevel]}`} />
                   <div>
                     <p className="text-sm text-muted-foreground">Livello Medio</p>
@@ -281,9 +268,12 @@ const CampaignDetail = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="phases" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="phases">Fasi della Campagna</TabsTrigger>
               <TabsTrigger value="dosimeters">Dosimetri Installati</TabsTrigger>
+              {campaign.currentPhase === 'phase2' && (
+                <TabsTrigger value="phase1">Scheda Fase 1</TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="phases" className="space-y-6">
@@ -371,6 +361,59 @@ const CampaignDetail = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {campaign.currentPhase === 'phase2' && (
+              <TabsContent value="phase1" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Dati Fase 1 - Posizionamento
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-medium mb-3">Tecnico Proj.Eco</h4>
+                        <div className="space-y-2 text-sm">
+                          <p><span className="text-muted-foreground">Nome:</span> Marco Rossi</p>
+                          <p><span className="text-muted-foreground">Cognome:</span> Rossi</p>
+                          <p><span className="text-muted-foreground">Firma:</span> M.Rossi</p>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-3">Referente Cliente</h4>
+                        <div className="space-y-2 text-sm">
+                          <p><span className="text-muted-foreground">Nome:</span> Anna Bianchi</p>
+                          <p><span className="text-muted-foreground">Cognome:</span> Bianchi</p>
+                          <p><span className="text-muted-foreground">Ruolo:</span> Responsabile Tecnico</p>
+                          <p><span className="text-muted-foreground">Firma:</span> A.Bianchi</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-3">Dosimetri Fase 1</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {campaign.dosimeters.map((dosimeter, index) => (
+                          <div key={dosimeter.id} className="p-4 border rounded-lg bg-muted/30">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-mono text-sm font-semibold">R{index + 1}</span>
+                              <span className="text-xs text-muted-foreground">Dispositivo 1</span>
+                            </div>
+                            <div className="space-y-1 text-sm">
+                              <p><span className="text-muted-foreground">Codice:</span> {dosimeter.id}</p>
+                              <p><span className="text-muted-foreground">Piano:</span> Piano Terra</p>
+                              <p><span className="text-muted-foreground">Ubicazione:</span> {dosimeter.room}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </main>

@@ -15,7 +15,6 @@ const mockCampaigns: RadonCampaign[] = [
     location: 'Roma, Centro Storico',
     startDate: '2024-01-15',
     endDate: '2024-03-15',
-    participantCount: 45,
     status: 'active',
     averageLevel: 120,
     riskLevel: 'medium'
@@ -25,7 +24,6 @@ const mockCampaigns: RadonCampaign[] = [
     name: 'Indagine Scuole Elementari',
     location: 'Milano, Zona Porta Garibaldi',
     startDate: '2024-02-01',
-    participantCount: 15,
     status: 'completed',
     averageLevel: 85,
     riskLevel: 'low'
@@ -35,7 +33,6 @@ const mockCampaigns: RadonCampaign[] = [
     name: 'Campagna Quartiere Residenziale',
     location: 'Torino, San Salvario',
     startDate: '2024-03-10',
-    participantCount: 30,
     status: 'planned',
     riskLevel: 'low'
   },
@@ -45,7 +42,6 @@ const mockCampaigns: RadonCampaign[] = [
     location: 'Napoli, Area Industriale',
     startDate: '2023-12-01',
     endDate: '2024-01-31',
-    participantCount: 25,
     status: 'completed',
     averageLevel: 180,
     riskLevel: 'high'
@@ -152,9 +148,9 @@ const Index = () => {
             </p>
           </div>
           <div className="bg-card p-4 rounded-lg border border-border" style={{ boxShadow: 'var(--shadow-card)' }}>
-            <p className="text-sm text-muted-foreground">Partecipanti Totali</p>
+            <p className="text-sm text-muted-foreground">Dosimetri Attivi</p>
             <p className="text-2xl font-bold text-card-foreground">
-              {campaigns.reduce((sum, c) => sum + c.participantCount, 0)}
+              {campaigns.filter(c => c.status === 'active').length * 12}
             </p>
           </div>
         </div>
