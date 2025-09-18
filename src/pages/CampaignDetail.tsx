@@ -225,6 +225,146 @@ const CampaignDetail = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
         <div id="campaign-report">
+          {/* Sezione Dati Campagna per PDF */}
+          <Card className="mb-8 print-section">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Dati Campagna
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Commessa:</span>
+                <span className="ml-1 font-medium">COM-2024-001</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Cliente:</span>
+                <span className="ml-1 font-medium">Comune di Roma</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Città:</span>
+                <span className="ml-1 font-medium">{campaign.location}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Provincia:</span>
+                <span className="ml-1 font-medium">RM</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Indirizzo:</span>
+                <span className="ml-1">Via del Centro Storico</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Email:</span>
+                <span className="ml-1">info@comune.roma.it</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sezione Dati Fase 1 per PDF */}
+          <Card className="mb-8 print-section">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Dati Fase 1 - Posizionamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Data Inizio:</span>
+                  <span className="ml-1 font-medium">{new Date(campaign.startDate).toLocaleDateString('it-IT')}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Data Fine:</span>
+                  <span className="ml-1 font-medium">{new Date(campaign.phases.phase1.endDate).toLocaleDateString('it-IT')}</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium mb-3">Tecnico Proj.Eco</h4>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-muted-foreground">Nome:</span> Marco Rossi</p>
+                    <p><span className="text-muted-foreground">Cognome:</span> Rossi</p>
+                    <p><span className="text-muted-foreground">Firma:</span> M.Rossi</p>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-3">Referente Cliente</h4>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-muted-foreground">Nome:</span> Anna Bianchi</p>
+                    <p><span className="text-muted-foreground">Cognome:</span> Bianchi</p>
+                    <p><span className="text-muted-foreground">Ruolo:</span> Responsabile Tecnico</p>
+                    <p><span className="text-muted-foreground">Firma:</span> A.Bianchi</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-3">Dosimetri Installati Fase 1</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {campaign.dosimeters.map((dosimeter, index) => (
+                    <div key={dosimeter.id} className="p-4 border rounded-lg bg-muted/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-mono text-sm font-semibold">R{index + 1}</span>
+                        <span className="text-xs text-muted-foreground">Dispositivo 1</span>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <p><span className="text-muted-foreground">Codice:</span> {dosimeter.id}</p>
+                        <p><span className="text-muted-foreground">Piano:</span> Piano Terra</p>
+                        <p><span className="text-muted-foreground">Ubicazione:</span> {dosimeter.room}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {campaign.currentPhase === 'phase2' && (
+            <Card className="mb-8 print-section">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Dati Fase 2 - Ritiro
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Data Inizio:</span>
+                    <span className="ml-1 font-medium">{new Date(campaign.phases.phase2.startDate).toLocaleDateString('it-IT')}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Data Fine Prevista:</span>
+                    <span className="ml-1 font-medium">{calculatePickupDate(campaign.startDate)}</span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium mb-3">Tecnico Proj.Eco</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="text-muted-foreground">Nome:</span> Marco Rossi</p>
+                      <p><span className="text-muted-foreground">Cognome:</span> Rossi</p>
+                      <p><span className="text-muted-foreground">Firma:</span> M.Rossi</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-3">Referente Cliente</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="text-muted-foreground">Nome:</span> Anna Bianchi</p>
+                      <p><span className="text-muted-foreground">Cognome:</span> Bianchi</p>
+                      <p><span className="text-muted-foreground">Ruolo:</span> Responsabile Tecnico</p>
+                      <p><span className="text-muted-foreground">Firma:</span> A.Bianchi</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Campaign Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card>
@@ -322,41 +462,33 @@ const CampaignDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {campaign.dosimeters.map((dosimeter) => (
-                      <div key={dosimeter.id} className="p-4 border rounded-lg bg-card">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="font-mono text-sm font-semibold">{dosimeter.id}</span>
-                          <Badge className={statusColors[dosimeter.status]}>
-                            {statusLabels[dosimeter.status]}
-                          </Badge>
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Partecipante:</span>
-                            <span className="ml-1 font-medium">{dosimeter.participantName}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Indirizzo:</span>
-                            <span className="ml-1">{dosimeter.address}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Stanza:</span>
-                            <span className="ml-1">{dosimeter.room}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Installato:</span>
-                            <span className="ml-1">{new Date(dosimeter.installDate).toLocaleDateString('it-IT')}</span>
-                          </div>
-                          {dosimeter.level && (
-                            <div className="pt-2 border-t">
-                              <span className="text-muted-foreground">Livello attuale:</span>
-                              <span className="ml-1 font-semibold">{dosimeter.level} Bq/m³</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {campaign.dosimeters.map((dosimeter, index) => (
+              <div key={dosimeter.id} className="p-4 border rounded-lg bg-card">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-mono text-sm font-semibold">R{index + 1}</span>
+                  <Badge className={statusColors[dosimeter.status]}>
+                    {statusLabels[dosimeter.status]}
+                  </Badge>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Stanza:</span>
+                    <span className="ml-1">{dosimeter.room}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Installato:</span>
+                    <span className="ml-1">{new Date(dosimeter.installDate).toLocaleDateString('it-IT')}</span>
+                  </div>
+                  {dosimeter.level && (
+                    <div className="pt-2 border-t">
+                      <span className="text-muted-foreground">Livello rilevato:</span>
+                      <span className="ml-1 font-semibold">{dosimeter.level} Bq/m³</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
                   </div>
                 </CardContent>
               </Card>
