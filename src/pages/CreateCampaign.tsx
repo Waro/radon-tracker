@@ -94,6 +94,18 @@ const CreateCampaign = () => {
     };
     
     console.log('Saving campaign:', fullCampaignData);
+
+    // Calcola il totale dei dosimetri installati (Phase 1 + Phase 2)
+    const totalDosimeters = phase1Dosimetri.length + dosimetri2.length;
+    
+    // Notifica l'installazione dei dosimetri
+    const event = new CustomEvent('dosimeter-installation', {
+      detail: {
+        campaignName: campaignData.commessa || 'Campagna senza nome',
+        dosimeterCount: totalDosimeters
+      }
+    });
+    window.dispatchEvent(event);
     
     toast({
       title: "Successo",

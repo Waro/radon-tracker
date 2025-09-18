@@ -31,25 +31,31 @@ export const DosimetersDialog = ({ open, onOpenChange, campaigns }: DosimetersDi
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [stockValue, setStockValue] = useState(250); // Valore iniziale esempio
+  const [stockValue, setStockValue] = useState(() => {
+    const saved = localStorage.getItem('dosimeters_stock');
+    return saved ? parseInt(saved) : 250;
+  });
   const [isEditingStock, setIsEditingStock] = useState(false);
   const [tempStockValue, setTempStockValue] = useState(stockValue);
-  const [stockHistory, setStockHistory] = useState<StockHistory[]>([
-    {
-      id: '1',
-      user: 'Admin',
-      oldValue: 200,
-      newValue: 250,
-      timestamp: '2024-01-15 10:30:00'
-    },
-    {
-      id: '2', 
-      user: 'Marco Rossi',
-      oldValue: 180,
-      newValue: 200,
-      timestamp: '2024-01-10 14:15:00'
-    }
-  ]);
+  const [stockHistory, setStockHistory] = useState<StockHistory[]>(() => {
+    const saved = localStorage.getItem('dosimeters_history');
+    return saved ? JSON.parse(saved) : [
+      {
+        id: '1',
+        user: 'Admin',
+        oldValue: 200,
+        newValue: 250,
+        timestamp: '2024-01-15 10:30:00'
+      },
+      {
+        id: '2', 
+        user: 'Marco Rossi',
+        oldValue: 180,
+        newValue: 200,
+        timestamp: '2024-01-10 14:15:00'
+      }
+    ];
+  });
 
   // Calcolo dosimetri attivi (esempio: 12 per campagna attiva)
   const activeDosimeters = campaigns.filter(c => c.status === 'active').length * 12;
@@ -68,6 +74,7 @@ export const DosimetersDialog = ({ open, onOpenChange, campaigns }: DosimetersDi
   const handleStockUpdate = () => {
     const oldValue = stockValue;
     setStockValue(tempStockValue);
+    localStorage.setItem('dosimeters_stock', tempStockValue.toString());
     
     // Aggiungi alla cronologia
     const newHistoryEntry: StockHistory = {
@@ -78,12 +85,40 @@ export const DosimetersDialog = ({ open, onOpenChange, campaigns }: DosimetersDi
       timestamp: new Date().toLocaleString('it-IT')
     };
     
-    setStockHistory(prev => [newHistoryEntry, ...prev]);
+    const updatedHistory = [newHistoryEntry, ...stockHistory];
+    setStockHistory(updatedHistory);
+    localStorage.setItem('dosimeters_history', JSON.stringify(updatedHistory));
     setIsEditingStock(false);
     
     toast({
       title: "Aggiornamento completato",
       description: `Dosimetri in magazzino aggiornati: ${tempStockValue}`
+    });
+  };
+
+  // Funzione per gestire installazioni automatiche
+  const handleDosimeterInstallation = (campaignName: string, dosimeterCount: number) => {
+    const oldValue = stockValue;
+    const newValue = Math.max(0, oldValue - dosimeterCount);
+    setStockValue(newValue);
+    localStorage.setItem('dosimeters_stock', newValue.toString());
+
+    // Aggiungi alla cronologia l'installazione
+    const newHistoryEntry: StockHistory = {
+      id: Date.now().toString(),
+      user: user?.name || 'Sistema',
+      oldValue: oldValue,
+      newValue: newValue,
+      timestamp: new Date().toLocaleString('it-IT')
+    };
+
+    const updatedHistory = [newHistoryEntry, ...stockHistory];
+    setStockHistory(updatedHistory);
+    localStorage.setItem('dosimeters_history', JSON.stringify(updatedHistory));
+
+    toast({
+      title: "Installazione registrata",
+      description: `${dosimeterCount} dosimetri installati per ${campaignName}`
     });
   };
 
@@ -99,6 +134,20 @@ export const DosimetersDialog = ({ open, onOpenChange, campaigns }: DosimetersDi
       setTempStockValue(stockValue);
     }
   }, [open, stockValue]);
+
+  // Listener per installazioni di dosimetri
+  useEffect(() => {
+    const handleInstallation = (event: CustomEvent) => {
+      const { campaignName, dosimeterCount } = event.detail;
+      handleDosimeterInstallation(campaignName, dosimeterCount);
+    };
+
+    window.addEventListener('dosimeter-installation', handleInstallation as EventListener);
+    
+    return () => {
+      window.removeEventListener('dosimeter-installation', handleInstallation as EventListener);
+    };
+  }, [stockValue, stockHistory, user?.name]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -205,7 +254,7 @@ export const DosimetersDialog = ({ open, onOpenChange, campaigns }: DosimetersDi
 
           {/* Storico Modifiche */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">Storico Modifiche Magazzino</h3>
+            <h3 className="text-lg font-semibold mb-3">Storico magazzino</h3>
             <div className="border rounded-lg">
               <Table>
                 <TableHeader>
