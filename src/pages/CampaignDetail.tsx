@@ -4,10 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Download, MapPin, CalendarDays, AlertTriangle, Activity, Package, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Download, MapPin, CalendarDays, AlertTriangle, Activity, Package, FileText, MousePointerClick } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Phase1Form } from "@/components/campaign/Phase1Form";
+import { Phase2Form } from "@/components/campaign/Phase2Form";
+import { CampaignCompletionDialog } from "@/components/campaign/CampaignCompletionDialog";
 
 // Mock data for campaign details with dosimeters
 const mockCampaignDetails = {
@@ -112,6 +116,11 @@ const CampaignDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [showPhase1Form, setShowPhase1Form] = useState(false);
+  const [showPhase2Form, setShowPhase2Form] = useState(false);
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false);
+  const [phase1Data, setPhase1Data] = useState<any>(null);
+  const [phase2Data, setPhase2Data] = useState<any>(null);
 
   const campaign = mockCampaignDetails[id as keyof typeof mockCampaignDetails];
 
@@ -180,6 +189,50 @@ const CampaignDetail = () => {
     const pickup = new Date(start);
     pickup.setMonth(pickup.getMonth() + 6);
     return pickup.toLocaleDateString('it-IT');
+  };
+
+  const handlePhaseClick = (phaseKey: string, phaseStatus: string) => {
+    if (campaign.status !== 'active') return;
+    
+    if (phaseKey === 'phase2' && phaseStatus === 'active') {
+      // Fase 2 in corso - apri il form appropriato
+      if (!phase1Data) {
+        setShowPhase1Form(true);
+      } else {
+        setShowPhase2Form(true);
+      }
+    } else if (phaseKey === 'phase3' && phaseStatus === 'planned') {
+      // Fase 3 pianificata - apri dialog conclusione
+      setShowCompletionDialog(true);
+    }
+  };
+
+  const handlePhase1Save = (data: any) => {
+    setPhase1Data(data);
+    setShowPhase1Form(false);
+    toast({
+      title: "Fase 1 completata",
+      description: "I dati della Fase 1 sono stati salvati. Puoi ora procedere con la Fase 2."
+    });
+    setShowPhase2Form(true);
+  };
+
+  const handlePhase2Save = (data: any) => {
+    setPhase2Data(data);
+    setShowPhase2Form(false);
+    toast({
+      title: "Fase 2 completata",
+      description: "La campagna è stata conclusa con successo"
+    });
+  };
+
+  const handleCampaignCompletion = (dosimeterLevels: { [key: string]: number }) => {
+    console.log("Livelli dosimetri:", dosimeterLevels);
+    // Qui andrà la logica per salvare i dati e aggiornare lo stato della campagna
+    toast({
+      title: "Campagna conclusa",
+      description: "Gli esiti sono stati salvati con successo"
+    });
   };
 
   return (
@@ -425,30 +478,40 @@ const CampaignDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {Object.entries(campaign.phases).map(([phaseKey, phase]) => (
-                    <div
-                      key={phaseKey}
-                      className={`p-4 rounded-lg border ${
-                        campaign.currentPhase === phaseKey ? 'border-primary bg-primary/5' : 'border-border'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold">{phase.name}</h3>
-                        <Badge className={statusColors[phase.status]}>
-                          {statusLabels[phase.status]}
-                        </Badge>
+                  {Object.entries(campaign.phases).map(([phaseKey, phase]) => {
+                    const isClickable = campaign.status === 'active' && 
+                      ((phaseKey === 'phase2' && phase.status === 'active') || 
+                       (phaseKey === 'phase3' && phase.status === 'planned'));
+                    
+                    return (
+                      <div
+                        key={phaseKey}
+                        onClick={() => isClickable && handlePhaseClick(phaseKey, phase.status)}
+                        className={`p-4 rounded-lg border transition-all ${
+                          campaign.currentPhase === phaseKey ? 'border-primary bg-primary/5' : 'border-border'
+                        } ${isClickable ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''}`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{phase.name}</h3>
+                            {isClickable && <MousePointerClick className="h-4 w-4 text-primary" />}
+                          </div>
+                          <Badge className={statusColors[phase.status]}>
+                            {statusLabels[phase.status]}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">{phase.description}</p>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span>
+                            <span className="text-muted-foreground">Inizio:</span> {new Date(phase.startDate).toLocaleDateString('it-IT')}
+                          </span>
+                          <span>
+                            <span className="text-muted-foreground">Fine:</span> {new Date(phase.endDate).toLocaleDateString('it-IT')}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{phase.description}</p>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span>
-                          <span className="text-muted-foreground">Inizio:</span> {new Date(phase.startDate).toLocaleDateString('it-IT')}
-                        </span>
-                        <span>
-                          <span className="text-muted-foreground">Fine:</span> {new Date(phase.endDate).toLocaleDateString('it-IT')}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -549,6 +612,65 @@ const CampaignDetail = () => {
           </Tabs>
         </div>
       </main>
+
+      {/* Dialog per Fase 1 */}
+      <Dialog open={showPhase1Form} onOpenChange={setShowPhase1Form}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Fase 1 - Posizionamento Dosimetri</DialogTitle>
+          </DialogHeader>
+          <Phase1Form
+            data={phase1Data || {
+              dataInizio: '',
+              dataFine: '',
+              tecnicoNome: '',
+              tecnicoCognome: '',
+              tecnicoFirma: '',
+              clienteNome: '',
+              clienteCognome: '',
+              clienteRuolo: '',
+              clienteFirma: ''
+            }}
+            onChange={setPhase1Data}
+            onBack={() => setShowPhase1Form(false)}
+            onNext={handlePhase1Save}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog per Fase 2 */}
+      <Dialog open={showPhase2Form} onOpenChange={setShowPhase2Form}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Fase 2 - Ritiro Dosimetri</DialogTitle>
+          </DialogHeader>
+          <Phase2Form
+            data={phase2Data || {
+              dataInizio: '',
+              dataFine: '',
+              tecnicoNome: '',
+              tecnicoCognome: '',
+              tecnicoFirma: '',
+              referenteNome: '',
+              referenteCognome: '',
+              referenteRuolo: '',
+              referenteFirma: ''
+            }}
+            phase1Dosimetri={phase1Data?.dosimetri || []}
+            onChange={(field, value) => setPhase2Data(prev => ({ ...prev, [field]: value }))}
+            onBack={() => setShowPhase2Form(false)}
+            onSave={handlePhase2Save}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog per Conclusione Campagna */}
+      <CampaignCompletionDialog
+        open={showCompletionDialog}
+        onOpenChange={setShowCompletionDialog}
+        dosimeters={campaign.dosimeters}
+        onComplete={handleCampaignCompletion}
+      />
     </div>
   );
 };
