@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Filter, LogOut, User } from "lucide-react";
-import { RadonCampaignCard, type RadonCampaign } from "@/components/RadonCampaignCard";
+import { type RadonCampaign } from "@/components/RadonCampaignCard";
 import { DosimetersDialog } from "@/components/DosimetersDialog";
+import { KanbanBoard } from "@/components/KanbanBoard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -161,17 +162,12 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Campaigns Grid */}
+        {/* Kanban Board */}
         {filteredCampaigns.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCampaigns.map(campaign => (
-              <RadonCampaignCard
-                key={campaign.id}
-                campaign={campaign}
-                onClick={() => handleCampaignClick(campaign)}
-              />
-            ))}
-          </div>
+          <KanbanBoard 
+            campaigns={filteredCampaigns}
+            onCampaignClick={handleCampaignClick}
+          />
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">Nessuna campagna trovata</p>
