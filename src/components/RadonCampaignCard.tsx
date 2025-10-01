@@ -8,7 +8,7 @@ export interface RadonCampaign {
   location: string;
   startDate: string;
   endDate?: string;
-  status: 'active' | 'completed' | 'planned' | 'suspended';
+  status: 'active' | 'completed' | 'planned' | 'unplanned' | 'awaiting_results';
   averageLevel?: number; // Bq/m³
   riskLevel: 'low' | 'medium' | 'high';
 }
@@ -19,10 +19,11 @@ interface RadonCampaignCardProps {
 }
 
 const statusColors = {
-  active: 'bg-accent text-accent-foreground',
-  completed: 'bg-success text-success-foreground',
-  planned: 'bg-primary text-primary-foreground',
-  suspended: 'bg-warning text-warning-foreground'
+  planned: 'bg-blue-500 text-white',
+  unplanned: 'bg-purple-500 text-white',
+  active: 'bg-green-500 text-white',
+  awaiting_results: 'bg-orange-500 text-white',
+  completed: 'bg-red-500 text-white'
 };
 
 const riskColors = {
@@ -32,10 +33,11 @@ const riskColors = {
 };
 
 const statusLabels = {
-  active: 'In Corso',
-  completed: 'Completata',
   planned: 'Pianificata',
-  suspended: 'Sospesa'
+  unplanned: 'Non pianificata',
+  active: 'In corso',
+  awaiting_results: 'Attesa esiti',
+  completed: 'Terminata'
 };
 
 export const RadonCampaignCard = ({ campaign, onClick }: RadonCampaignCardProps) => {

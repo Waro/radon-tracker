@@ -10,7 +10,7 @@ const columns = [
   { id: 'planned', title: 'Da iniziare', status: 'planned' as const },
   { id: 'phase1', title: 'Fase 1', status: 'active' as const },
   { id: 'phase2', title: 'Fase 2', status: 'phase2' as const },
-  { id: 'completed', title: 'Terminate', status: 'completed' as const }
+  { id: 'awaiting', title: 'Attesa esiti', status: 'awaiting_results' as const }
 ];
 
 export const KanbanBoard = ({ campaigns, onCampaignClick }: KanbanBoardProps) => {
@@ -35,6 +35,9 @@ export const KanbanBoard = ({ campaigns, onCampaignClick }: KanbanBoardProps) =>
           return new Date() < sixMonthsLater;
         }
         return false;
+      }
+      if (status === 'awaiting_results') {
+        return campaign.status === 'awaiting_results';
       }
       return campaign.status === status;
     });
