@@ -47,6 +47,25 @@ const mockCampaigns: RadonCampaign[] = [
     status: 'completed',
     averageLevel: 180,
     riskLevel: 'high'
+  },
+  {
+    id: '5',
+    name: 'Campagna Fase 1 Attiva',
+    location: 'Firenze, Centro',
+    startDate: '2025-08-01',
+    status: 'active',
+    averageLevel: 95,
+    riskLevel: 'low'
+  },
+  {
+    id: '6',
+    name: 'Campagna Completata 2025',
+    location: 'Bologna, Zona Universitaria',
+    startDate: '2024-10-01',
+    endDate: '2025-04-15',
+    status: 'completed',
+    averageLevel: 150,
+    riskLevel: 'medium'
   }
 ];
 
