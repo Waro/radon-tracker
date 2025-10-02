@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import CreateCampaign from "./pages/CreateCampaign";
 import CampaignDetail from "./pages/CampaignDetail";
 import CompletedCampaigns from "./pages/CompletedCampaigns";
+import ColumnCampaigns from "./pages/ColumnCampaigns";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,11 @@ const App = () => (
             <Route path="/completed-campaigns" element={
               <ProtectedRoute>
                 <CompletedCampaigns />
+              </ProtectedRoute>
+            } />
+            <Route path="/campaigns/:columnId" element={
+              <ProtectedRoute>
+                <ColumnCampaigns />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
