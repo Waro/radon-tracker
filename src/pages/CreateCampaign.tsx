@@ -21,7 +21,8 @@ const CreateCampaign = () => {
     indirizzo: '',
     telefono: '',
     mail: '',
-    altro: ''
+    altro: '',
+    dosimetriPrevisti: ''
   });
 
   const [phase1Data, setPhase1Data] = useState({

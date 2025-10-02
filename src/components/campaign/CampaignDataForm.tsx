@@ -16,6 +16,7 @@ interface CampaignData {
   telefono: string;
   mail: string;
   altro: string;
+  dosimetriPrevisti: string;
 }
 
 interface CampaignDataFormProps {
@@ -140,6 +141,20 @@ export const CampaignDataForm = ({ data, onChange, onNext, onCancel }: CampaignD
             onChange={(e) => onChange('mail', e.target.value)}
             placeholder="Email di contatto"
           />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="dosimetriPrevisti">Dosimetri Previsti</Label>
+            <Input
+              id="dosimetriPrevisti"
+              type="number"
+              value={data.dosimetriPrevisti}
+              onChange={(e) => onChange('dosimetriPrevisti', e.target.value)}
+              placeholder="Numero dosimetri previsti"
+              min="0"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">

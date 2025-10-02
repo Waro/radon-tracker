@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Filter, LogOut, User } from "lucide-react";
 import { type RadonCampaign } from "@/components/RadonCampaignCard";
-import { DosimetersDialog } from "@/components/DosimetersDialog";
+import { ActiveDosimetersDialog } from "@/components/ActiveDosimetersDialog";
+import { AvailableDosimetersDialog } from "@/components/AvailableDosimetersDialog";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -75,7 +76,8 @@ const Index = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [campaigns] = useState<RadonCampaign[]>(mockCampaigns);
-  const [dosimetersDialogOpen, setDosimetersDialogOpen] = useState(false);
+  const [activeDosimetersDialogOpen, setActiveDosimetersDialogOpen] = useState(false);
+  const [availableDosimetersDialogOpen, setAvailableDosimetersDialogOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -157,7 +159,11 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">Totale Campagne</p>
             <p className="text-2xl font-bold text-card-foreground">{campaigns.length}</p>
           </div>
-          <div className="bg-card p-4 rounded-lg border border-border" style={{ boxShadow: 'var(--shadow-card)' }}>
+          <div 
+            className="bg-card p-4 rounded-lg border border-border cursor-pointer hover:bg-accent/5 transition-colors" 
+            style={{ boxShadow: 'var(--shadow-card)' }}
+            onClick={() => setActiveDosimetersDialogOpen(true)}
+          >
             <p className="text-sm text-muted-foreground">In Corso</p>
             <p className="text-2xl font-bold text-accent">
               {campaigns.filter(c => c.status === 'active').length}
@@ -172,11 +178,11 @@ const Index = () => {
           <div 
             className="bg-card p-4 rounded-lg border border-border cursor-pointer hover:bg-accent/5 transition-colors" 
             style={{ boxShadow: 'var(--shadow-card)' }}
-            onClick={() => setDosimetersDialogOpen(true)}
+            onClick={() => setAvailableDosimetersDialogOpen(true)}
           >
-            <p className="text-sm text-muted-foreground">Dosimetri Attivi</p>
+            <p className="text-sm text-muted-foreground">Dosimetri Disponibili</p>
             <p className="text-2xl font-bold text-card-foreground">
-              {campaigns.filter(c => c.status === 'active').length * 12}
+              {250 - campaigns.filter(c => c.status === 'active').length * 12}
             </p>
           </div>
         </div>
@@ -212,10 +218,15 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Dosimeters Dialog */}
-      <DosimetersDialog
-        open={dosimetersDialogOpen}
-        onOpenChange={setDosimetersDialogOpen}
+      {/* Dosimeters Dialogs */}
+      <ActiveDosimetersDialog
+        open={activeDosimetersDialogOpen}
+        onOpenChange={setActiveDosimetersDialogOpen}
+        campaigns={campaigns}
+      />
+      <AvailableDosimetersDialog
+        open={availableDosimetersDialogOpen}
+        onOpenChange={setAvailableDosimetersDialogOpen}
         campaigns={campaigns}
       />
     </div>
