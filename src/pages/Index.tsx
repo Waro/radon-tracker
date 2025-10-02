@@ -199,6 +199,17 @@ const Index = () => {
             </Button>
           </div>
         )}
+
+        {/* Link to Completed Campaigns */}
+        <div className="flex justify-end mt-8">
+          <Button 
+            variant="link" 
+            onClick={() => navigate('/completed-campaigns')}
+            className="text-primary hover:text-primary/80"
+          >
+            Campagne terminate →
+          </Button>
+        </div>
       </main>
 
       {/* Dosimeters Dialog */}

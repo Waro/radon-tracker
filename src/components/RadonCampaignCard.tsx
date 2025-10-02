@@ -57,7 +57,7 @@ export const RadonCampaignCard = ({ campaign, onClick }: RadonCampaignCardProps)
               <span className="text-sm">{campaign.location}</span>
             </div>
           </div>
-          <Badge className={statusColors[campaign.status]}>
+          <Badge className={`${statusColors[campaign.status]} whitespace-nowrap`}>
             {statusLabels[campaign.status]}
           </Badge>
         </div>
