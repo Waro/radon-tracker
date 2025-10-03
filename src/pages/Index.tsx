@@ -2,7 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter, LogOut, User } from "lucide-react";
+import { Plus, Search, Filter, LogOut, User, Settings, Moon, Sun } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { type RadonCampaign } from "@/components/RadonCampaignCard";
 import { ActiveDosimetersDialog } from "@/components/ActiveDosimetersDialog";
 import { AvailableDosimetersDialog } from "@/components/AvailableDosimetersDialog";
@@ -59,6 +67,17 @@ const Index = () => {
   const [campaigns] = useState<RadonCampaign[]>(mockCampaigns);
   const [activeDosimetersDialogOpen, setActiveDosimetersDialogOpen] = useState(false);
   const [availableDosimetersDialogOpen, setAvailableDosimetersDialogOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.classList.toggle('dark');
+    toast({
+      title: "Tema modificato",
+      description: `Tema ${newTheme === 'dark' ? 'scuro' : 'chiaro'} attivato`
+    });
+  };
 
   const handleLogout = () => {
     logout();
@@ -90,10 +109,6 @@ const Index = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span>Benvenuto, {user?.name}</span>
-              </div>
               <Button 
                 onClick={() => navigate('/create-campaign')}
                 className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
@@ -102,14 +117,42 @@ const Index = () => {
                 <Plus className="h-4 w-4" />
                 Nuova Campagna
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={handleLogout}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-card border-border z-50">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.name || 'Utente'}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email || 'email@example.com'}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Account</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
+                    {theme === 'light' ? (
+                      <Moon className="mr-2 h-4 w-4" />
+                    ) : (
+                      <Sun className="mr-2 h-4 w-4" />
+                    )}
+                    <span>Cambia tema</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
