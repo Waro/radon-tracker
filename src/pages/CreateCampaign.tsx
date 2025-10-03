@@ -78,17 +78,31 @@ const CreateCampaign = () => {
   const handlePhase1Complete = (dosimetri: any[]) => {
     setPhase1Dosimetri(dosimetri);
     
-    // Salva la campagna in stato "Fase 1"
-    const phase1Campaign = {
-      ...campaignData,
-      status: 'fase1',
+    // Crea la campagna completa
+    const newCampaign = {
+      id: Date.now().toString(),
+      name: campaignData.commessa || 'Campagna senza nome',
+      location: `${campaignData.citta}, ${campaignData.indirizzo}`,
+      startDate: new Date().toISOString().split('T')[0],
+      status: 'fase1' as const,
+      riskLevel: 'low' as const,
       phase1: {
         ...phase1Data,
         dosimetri: dosimetri
-      }
+      },
+      ...campaignData
     };
     
-    console.log('Salvando campagna Fase 1:', phase1Campaign);
+    // Salva in localStorage
+    const stored = localStorage.getItem('radon_campaigns');
+    const campaigns = stored ? JSON.parse(stored) : [];
+    campaigns.push(newCampaign);
+    localStorage.setItem('radon_campaigns', JSON.stringify(campaigns));
+    
+    console.log('Salvando campagna Fase 1:', newCampaign);
+    
+    // Notifica l'aggiornamento
+    window.dispatchEvent(new Event('campaign-updated'));
     
     // Notifica la creazione della campagna
     const event = new CustomEvent('dosimeter-installation', {

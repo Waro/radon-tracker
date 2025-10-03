@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,10 +64,40 @@ const Index = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [campaigns] = useState<RadonCampaign[]>(mockCampaigns);
+  const [campaigns, setCampaigns] = useState<RadonCampaign[]>([]);
   const [activeDosimetersDialogOpen, setActiveDosimetersDialogOpen] = useState(false);
   const [availableDosimetersDialogOpen, setAvailableDosimetersDialogOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // Carica le campagne da localStorage all'avvio
+  useEffect(() => {
+    const loadCampaigns = () => {
+      const stored = localStorage.getItem('radon_campaigns');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setCampaigns(parsed);
+        } catch (error) {
+          console.error('Errore nel caricamento delle campagne:', error);
+          setCampaigns(mockCampaigns);
+        }
+      } else {
+        // Se non ci sono campagne salvate, usa i dati di esempio
+        setCampaigns(mockCampaigns);
+        localStorage.setItem('radon_campaigns', JSON.stringify(mockCampaigns));
+      }
+    };
+
+    loadCampaigns();
+
+    // Ascolta gli eventi di creazione/modifica campagne
+    const handleCampaignUpdate = () => {
+      loadCampaigns();
+    };
+
+    window.addEventListener('campaign-updated', handleCampaignUpdate);
+    return () => window.removeEventListener('campaign-updated', handleCampaignUpdate);
+  }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
