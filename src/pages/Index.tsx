@@ -14,59 +14,40 @@ import { useToast } from "@/hooks/use-toast";
 const mockCampaigns: RadonCampaign[] = [
   {
     id: '1',
-    name: 'Monitoraggio Centro Storico 2024',
-    location: 'Roma, Centro Storico',
-    startDate: '2024-01-15',
-    endDate: '2024-03-15',
-    status: 'active',
-    averageLevel: 120,
-    riskLevel: 'medium'
+    name: 'Monitoraggio Scuola Elementare G. Verdi',
+    location: 'Milano, Via Larga 12',
+    startDate: '2025-09-15',
+    status: 'fase1',
+    riskLevel: 'low'
   },
   {
     id: '2',
-    name: 'Indagine Scuole Elementari',
-    location: 'Milano, Zona Porta Garibaldi',
-    startDate: '2024-02-01',
-    status: 'completed',
-    averageLevel: 85,
-    riskLevel: 'low'
-  },
-  {
-    id: '3',
-    name: 'Campagna Quartiere Residenziale',
-    location: 'Torino, San Salvario',
-    startDate: '2024-03-10',
-    status: 'planned',
-    riskLevel: 'low'
-  },
-  {
-    id: '4',
-    name: 'Monitoraggio Zona Industriale',
-    location: 'Napoli, Area Industriale',
-    startDate: '2023-12-01',
-    endDate: '2024-01-31',
-    status: 'completed',
-    averageLevel: 180,
-    riskLevel: 'high'
-  },
-  {
-    id: '5',
-    name: 'Campagna Fase 1 Attiva',
-    location: 'Firenze, Centro',
-    startDate: '2025-08-01',
-    status: 'active',
+    name: 'Controllo Uffici Comunali',
+    location: 'Torino, Corso Francia 89',
+    startDate: '2025-07-20',
+    status: 'fase2',
     averageLevel: 95,
     riskLevel: 'low'
   },
   {
-    id: '6',
-    name: 'Campagna Completata 2025',
-    location: 'Bologna, Zona Universitaria',
-    startDate: '2024-10-01',
-    endDate: '2025-04-15',
-    status: 'completed',
-    averageLevel: 150,
+    id: '3',
+    name: 'Indagine Palazzo Storico',
+    location: 'Roma, Via dei Fori Imperiali 45',
+    startDate: '2025-03-10',
+    endDate: '2025-09-12',
+    status: 'awaiting',
+    averageLevel: 165,
     riskLevel: 'medium'
+  },
+  {
+    id: '4',
+    name: 'Monitoraggio Complesso Residenziale',
+    location: 'Bologna, Via Zamboni 33',
+    startDate: '2024-11-01',
+    endDate: '2025-05-15',
+    status: 'completed',
+    averageLevel: 220,
+    riskLevel: 'high'
   }
 ];
 
