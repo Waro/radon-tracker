@@ -348,7 +348,7 @@ export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) 
               className="flex-1 flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              Concludi Fase 1
+              Inizia Campagna
             </Button>
           </div>
         </form>

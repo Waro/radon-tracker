@@ -352,7 +352,7 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
               className="flex-1 flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              Concludi Campagna
+              Inizia Fase 2
             </Button>
           </div>
         </form>

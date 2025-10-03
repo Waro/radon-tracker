@@ -77,7 +77,34 @@ const CreateCampaign = () => {
 
   const handlePhase1Complete = (dosimetri: any[]) => {
     setPhase1Dosimetri(dosimetri);
-    setCurrentStep(3);
+    
+    // Salva la campagna in stato "Fase 1"
+    const phase1Campaign = {
+      ...campaignData,
+      status: 'fase1',
+      phase1: {
+        ...phase1Data,
+        dosimetri: dosimetri
+      }
+    };
+    
+    console.log('Salvando campagna Fase 1:', phase1Campaign);
+    
+    // Notifica la creazione della campagna
+    const event = new CustomEvent('dosimeter-installation', {
+      detail: {
+        campaignName: campaignData.commessa || 'Campagna senza nome',
+        dosimeterCount: dosimetri.length
+      }
+    });
+    window.dispatchEvent(event);
+    
+    toast({
+      title: "Successo",
+      description: "Campagna in Fase 1 creata con successo"
+    });
+    
+    navigate('/');
   };
 
   const handleSaveCampaign = (dosimetri2: any[]) => {
