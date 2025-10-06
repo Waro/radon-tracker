@@ -73,16 +73,22 @@ const Index = () => {
   useEffect(() => {
     const loadCampaigns = () => {
       const stored = localStorage.getItem('radon_campaigns');
+      console.log('📂 Caricamento campagne da localStorage');
+      console.log('📊 Dati grezzi localStorage:', stored);
+      
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
+          console.log('✅ Campagne parsate:', parsed);
+          console.log('📈 Numero di campagne:', parsed.length);
           setCampaigns(parsed);
         } catch (error) {
-          console.error('Errore nel caricamento delle campagne:', error);
+          console.error('❌ Errore nel caricamento delle campagne:', error);
           setCampaigns(mockCampaigns);
         }
       } else {
         // Se non ci sono campagne salvate, usa i dati di esempio
+        console.log('⚠️ Nessuna campagna in localStorage, uso mockCampaigns');
         setCampaigns(mockCampaigns);
         localStorage.setItem('radon_campaigns', JSON.stringify(mockCampaigns));
       }
@@ -92,6 +98,7 @@ const Index = () => {
 
     // Ascolta gli eventi di creazione/modifica campagne
     const handleCampaignUpdate = () => {
+      console.log('🔔 Evento campaign-updated ricevuto in Index');
       loadCampaigns();
     };
 
@@ -209,7 +216,11 @@ const Index = () => {
 
         {/* Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-card p-4 rounded-lg border border-border" style={{ boxShadow: 'var(--shadow-card)' }}>
+          <div 
+            className="bg-card p-4 rounded-lg border border-border cursor-pointer hover:bg-accent/5 transition-colors" 
+            style={{ boxShadow: 'var(--shadow-card)' }}
+            onClick={() => navigate('/all-campaigns')}
+          >
             <p className="text-sm text-muted-foreground">Totale Campagne</p>
             <p className="text-2xl font-bold text-card-foreground">{campaigns.length}</p>
           </div>
