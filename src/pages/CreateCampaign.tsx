@@ -128,7 +128,10 @@ const CreateCampaign = () => {
       description: "Campagna in Fase 1 creata con successo"
     });
     
-    navigate('/');
+    // Piccolo ritardo per permettere all'evento di essere processato
+    setTimeout(() => {
+      navigate('/');
+    }, 100);
   };
 
   const handleSaveCampaign = (dosimetri2: any[]) => {
