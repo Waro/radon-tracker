@@ -78,7 +78,7 @@ const CreateCampaign = () => {
   const handlePhase1Complete = (dosimetri: any[]) => {
     setPhase1Dosimetri(dosimetri);
     
-    // Crea la campagna completa
+    // Crea la campagna completa nel formato corretto
     const newCampaign = {
       id: Date.now().toString(),
       name: campaignData.commessa || 'Campagna senza nome',
@@ -86,11 +86,20 @@ const CreateCampaign = () => {
       startDate: new Date().toISOString().split('T')[0],
       status: 'fase1' as const,
       riskLevel: 'low' as const,
+      commessa: campaignData.commessa,
+      cliente: campaignData.cliente,
+      insegna: campaignData.insegna,
+      citta: campaignData.citta,
+      provincia: campaignData.provincia,
+      indirizzo: campaignData.indirizzo,
+      telefono: campaignData.telefono,
+      mail: campaignData.mail,
+      altro: campaignData.altro,
+      dosimetriPrevisti: campaignData.dosimetriPrevisti,
       phase1: {
         ...phase1Data,
         dosimetri: dosimetri
-      },
-      ...campaignData
+      }
     };
     
     // Salva in localStorage
@@ -99,7 +108,8 @@ const CreateCampaign = () => {
     campaigns.push(newCampaign);
     localStorage.setItem('radon_campaigns', JSON.stringify(campaigns));
     
-    console.log('Salvando campagna Fase 1:', newCampaign);
+    console.log('✅ Campagna salvata:', newCampaign);
+    console.log('📊 Totale campagne salvate:', campaigns.length);
     
     // Notifica l'aggiornamento
     window.dispatchEvent(new Event('campaign-updated'));
