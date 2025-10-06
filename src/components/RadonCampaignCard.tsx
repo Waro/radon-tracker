@@ -11,6 +11,8 @@ export interface RadonCampaign {
   status: 'active' | 'completed' | 'planned' | 'unplanned' | 'awaiting_results' | 'fase1' | 'fase2' | 'awaiting';
   averageLevel?: number; // Bq/m³
   riskLevel: 'low' | 'medium' | 'high';
+  phase1?: any;
+  phase2?: any;
 }
 
 interface RadonCampaignCardProps {

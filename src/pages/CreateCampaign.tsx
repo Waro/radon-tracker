@@ -74,7 +74,7 @@ const CreateCampaign = () => {
       name: campaignData.commessa || 'Campagna senza nome',
       location: `${campaignData.citta}, ${campaignData.indirizzo}`,
       startDate: new Date().toISOString().split('T')[0],
-      status: 'fase1' as const,
+      status: 'active' as const,
       riskLevel: 'low' as const,
       commessa: campaignData.commessa,
       cliente: campaignData.cliente,
@@ -164,39 +164,53 @@ const CreateCampaign = () => {
   };
 
   const handleSaveCampaign = (dosimetri2: any[]) => {
-    // Here you would typically save to a database
-    const fullCampaignData = {
-      ...campaignData,
-      phase1: {
-        ...phase1Data,
-        dosimetri: phase1Dosimetri
-      },
-      phase2: {
-        ...phase2Data,
-        dosimetri: dosimetri2
-      }
-    };
+    // Aggiorna la campagna esistente con i dati Phase2
+    const stored = localStorage.getItem('radon_campaigns');
+    const campaigns = stored ? JSON.parse(stored) : [];
     
-    console.log('Saving campaign:', fullCampaignData);
-
-    // Calcola il totale dei dosimetri installati (Phase 1 + Phase 2)
-    const totalDosimeters = phase1Dosimetri.length + dosimetri2.length;
+    const campaignIndex = campaigns.findIndex((c: any) => c.id === campaignId);
     
-    // Notifica l'installazione dei dosimetri
-    const event = new CustomEvent('dosimeter-installation', {
-      detail: {
-        campaignName: campaignData.commessa || 'Campagna senza nome',
-        dosimeterCount: totalDosimeters
-      }
-    });
-    window.dispatchEvent(event);
-    
-    toast({
-      title: "Successo",
-      description: "Campagna completata con successo"
-    });
-    
-    navigate('/');
+    if (campaignIndex !== -1) {
+      campaigns[campaignIndex] = {
+        ...campaigns[campaignIndex],
+        status: 'awaiting_results',
+        endDate: new Date().toISOString().split('T')[0],
+        phase2: {
+          ...phase2Data,
+          dosimetri: dosimetri2
+        }
+      };
+      
+      localStorage.setItem('radon_campaigns', JSON.stringify(campaigns));
+      
+      console.log('✅ Campagna completata (Fase 2):', campaigns[campaignIndex]);
+      console.log('📊 Dosimetri Fase 2:', dosimetri2.length);
+      
+      // Notifica l'aggiornamento
+      window.dispatchEvent(new Event('campaign-updated'));
+      
+      // Calcola il totale dei dosimetri installati
+      const totalDosimeters = phase1Dosimetri.length + dosimetri2.length;
+      
+      // Notifica l'installazione dei dosimetri
+      const event = new CustomEvent('dosimeter-installation', {
+        detail: {
+          campaignName: campaignData.commessa || 'Campagna senza nome',
+          dosimeterCount: totalDosimeters
+        }
+      });
+      window.dispatchEvent(event);
+      
+      toast({
+        title: "Successo",
+        description: "Fase 2 completata, campagna in attesa esiti"
+      });
+      
+      // Piccolo ritardo per permettere all'evento di essere processato
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
+    }
   };
 
   return (

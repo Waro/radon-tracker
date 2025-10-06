@@ -20,27 +20,18 @@ export const KanbanBoard = ({ campaigns, onCampaignClick }: KanbanBoardProps) =>
   const getCampaignsByStatus = (status: string) => {
     const filtered = campaigns.filter(campaign => {
       if (status === 'phase2') {
-        // Fase 2: campagne attive da più di 6 mesi (ritiro dosimetri)
-        if (campaign.status === 'active') {
-          const startDate = new Date(campaign.startDate);
-          const sixMonthsLater = new Date(startDate);
-          sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-          return new Date() >= sixMonthsLater;
-        }
-        return false;
+        // Fase 2: campagne attive con phase1 ma senza phase2
+        return campaign.status === 'active' && campaign.phase1 && !campaign.phase2;
       }
       if (status === 'active') {
-        // Fase 1: solo campagne attive da meno di 6 mesi
-        if (campaign.status === 'active') {
-          const startDate = new Date(campaign.startDate);
-          const sixMonthsLater = new Date(startDate);
-          sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-          return new Date() < sixMonthsLater;
-        }
-        return false;
+        // Fase 1: campagne attive senza phase1 completata
+        return campaign.status === 'active' && !campaign.phase1;
       }
       if (status === 'awaiting_results') {
         return campaign.status === 'awaiting_results';
+      }
+      if (status === 'planned') {
+        return campaign.status === 'planned';
       }
       return campaign.status === status;
     });
