@@ -119,7 +119,7 @@ export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) 
       <Card className="max-w-4xl mx-auto p-8">
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-foreground border-b border-border pb-2">
-            Posizionamento Fase 1
+            Fase 1 - Posizionamento Dosimetri
           </h2>
 
           <div className="space-y-4">
@@ -348,7 +348,7 @@ export const Phase1Form = ({ data, onChange, onBack, onNext }: Phase1FormProps) 
               className="flex-1 flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              Inizia Campagna
+              Salva Posizionamento Fase 1
             </Button>
           </div>
         </form>

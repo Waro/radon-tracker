@@ -3,10 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
-import { BarcodeScanner } from "../BarcodeScanner";
+import { ArrowLeft, Save } from "lucide-react";
 
-interface Phase2Data {
+interface Phase2RemovalData {
   dataInizio: string;
   dataFine: string;
   tecnicoNome: string;
@@ -18,91 +17,74 @@ interface Phase2Data {
   referenteFirma: string;
 }
 
-interface Dosimetro2 {
+interface DosimetroReading {
   id: number;
   codiceDispositivo2: string;
   piano: string;
   ubicazione: string;
-  foto: File[];
+  misurazione1: string;
+  misurazione2: string;
 }
 
-interface Phase2FormProps {
-  data: Phase2Data;
-  onChange: (field: keyof Phase2Data, value: string) => void;
+interface Phase2RemovalFormProps {
+  data: Phase2RemovalData;
+  onChange: (field: keyof Phase2RemovalData, value: string) => void;
   onBack: () => void;
-  onSave: (dosimetri: Dosimetro2[]) => void;
-  phase1Dosimetri: Array<{
+  onComplete: (readings: DosimetroReading[]) => void;
+  phase2Dosimetri: Array<{
     id: number;
-    codiceDispositivo1: string;
+    codiceDispositivo2: string;
     piano: string;
     ubicazione: string;
-    foto: File[];
+  }>;
+  phase1Readings: Array<{
+    id: number;
+    misurazione1: string;
   }>;
 }
 
-export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: Phase2FormProps) => {
-  const [dosimetri, setDosimetri] = useState<Dosimetro2[]>(
-    phase1Dosimetri.map(d => ({
-      id: d.id,
-      codiceDispositivo2: '',
-      piano: d.piano,
-      ubicazione: d.ubicazione,
-      foto: []
-    }))
+export const Phase2RemovalForm = ({ data, onChange, onBack, onComplete, phase2Dosimetri, phase1Readings }: Phase2RemovalFormProps) => {
+  const [readings, setReadings] = useState<DosimetroReading[]>(
+    phase2Dosimetri.map(d => {
+      const phase1Reading = phase1Readings.find(r => r.id === d.id);
+      return {
+        id: d.id,
+        codiceDispositivo2: d.codiceDispositivo2,
+        piano: d.piano,
+        ubicazione: d.ubicazione,
+        misurazione1: phase1Reading?.misurazione1 || '0',
+        misurazione2: ''
+      };
+    })
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleDosimetroChange = (id: number, field: keyof Dosimetro2, value: string) => {
-    setDosimetri(prev => 
-      prev.map(dosimetro => 
-        dosimetro.id === id ? { ...dosimetro, [field]: value } : dosimetro
+  const handleReadingChange = (id: number, value: string) => {
+    setReadings(prev => 
+      prev.map(reading => 
+        reading.id === id ? { ...reading, misurazione2: value } : reading
       )
     );
   };
 
-  const addDosimetro = () => {
-    const newId = Math.max(...dosimetri.map(d => d.id)) + 1;
-    setDosimetri(prev => [...prev, { 
-      id: newId, 
-      codiceDispositivo2: '', 
-      piano: '',
-      ubicazione: '',
-      foto: []
-    }]);
-  };
-
-  const removeDosimetro = (id: number) => {
-    if (dosimetri.length > 1) {
-      setDosimetri(prev => prev.filter(d => d.id !== id));
-    }
-  };
-
-  const handleFotoChange = (id: number, files: FileList | null) => {
-    if (files) {
-      const fileArray = Array.from(files);
-      if (fileArray.length > 3) {
-        setErrors(prev => ({ ...prev, [`foto_${id}`]: 'Massimo 3 foto per dosimetro' }));
-        return;
-      }
-      setErrors(prev => ({ ...prev, [`foto_${id}`]: '' }));
-      setDosimetri(prev => 
-        prev.map(dosimetro => 
-          dosimetro.id === id ? { ...dosimetro, foto: fileArray } : dosimetro
-        )
-      );
-    }
+  const calculateAverage = (val1: string, val2: string): number => {
+    const num1 = Number(val1) || 0;
+    const num2 = Number(val2) || 0;
+    return Math.round((num1 + num2) / 2);
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    // Validazione dosimetri
-    dosimetri.forEach(dosimetro => {
-      if (!dosimetro.codiceDispositivo2) {
-        newErrors[`codice_${dosimetro.id}`] = 'Campo obbligatorio';
-      }
-      if (dosimetro.foto.length === 0) {
-        newErrors[`foto_${dosimetro.id}`] = 'Almeno una foto è obbligatoria';
+    if (!data.dataInizio) {
+      newErrors.dataInizio = 'Campo obbligatorio';
+    }
+    
+    readings.forEach(reading => {
+      if (!reading.misurazione2) {
+        newErrors[`reading_${reading.id}`] = 'Campo obbligatorio';
+      } else if (isNaN(Number(reading.misurazione2)) || Number(reading.misurazione2) < 0) {
+        newErrors[`reading_${reading.id}`] = 'Valore non valido';
       }
     });
     
@@ -114,32 +96,34 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
     e.preventDefault();
     if (!validateForm()) return;
     
-    // Auto-compila data fine con data odierna
     const today = new Date().toISOString().split('T')[0];
     onChange('dataFine', today);
     
-    onSave(dosimetri);
+    onComplete(readings);
   };
 
   return (
     <div className="space-y-6">
-      {/* Scheda Posizionamento Fase 2 */}
       <Card className="max-w-4xl mx-auto p-8">
         <div className="space-y-6">
           <h2 className="text-xl font-semibold text-foreground border-b border-border pb-2">
-            Fase 2 - Posizionamento Dosimetri
+            Rimozione Fase 2
           </h2>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="dataInizio">Data Inizio</Label>
+                <Label htmlFor="dataInizio">Data Inizio *</Label>
                 <Input
                   id="dataInizio"
                   type="date"
                   value={data.dataInizio}
                   onChange={(e) => onChange('dataInizio', e.target.value)}
+                  className={errors.dataInizio ? 'border-destructive' : ''}
                 />
+                {errors.dataInizio && (
+                  <p className="text-sm text-destructive">{errors.dataInizio}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="dataFine">Data Fine</Label>
@@ -147,7 +131,6 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
                   id="dataFine"
                   type="date"
                   value={data.dataFine}
-                  onChange={(e) => onChange('dataFine', e.target.value)}
                   disabled
                   className="bg-muted"
                 />
@@ -233,99 +216,52 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
         </div>
       </Card>
 
-      {/* Scheda Dosimetri */}
       <Card className="max-w-4xl mx-auto p-8">
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground border-b border-border pb-2 flex-1">
-              Dosimetri Radon
-            </h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addDosimetro}
-              className="ml-4"
-            >
-              <Plus className="h-4 w-4" />
-              Aggiungi Dosimetro
-            </Button>
-          </div>
+          <h2 className="text-xl font-semibold text-foreground border-b border-border pb-2">
+            Misurazioni Fase 2 e Media Finale
+          </h2>
 
           <div className="space-y-4">
-            {dosimetri.map((dosimetro) => (
-              <Card key={dosimetro.id} className="p-4 border-2">
-                <div className="flex items-center justify-between mb-4">
+            {readings.map((reading) => (
+              <Card key={reading.id} className="p-4 border-2">
+                <div className="mb-4">
                   <h3 className="font-medium text-foreground">
-                    R{dosimetro.id}
+                    R{reading.id}
                   </h3>
-                  {dosimetri.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeDosimetro(dosimetro.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <p className="text-sm text-muted-foreground">
+                    {reading.codiceDispositivo2} - {reading.piano} - {reading.ubicazione}
+                  </p>
                 </div>
                 
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Codice Dispositivo 2 *</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={dosimetro.codiceDispositivo2}
-                          onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', e.target.value)}
-                          placeholder="Codice dispositivo"
-                          className={errors[`codice_${dosimetro.id}`] ? 'border-destructive' : ''}
-                        />
-                        <BarcodeScanner 
-                          onScan={(code) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', code)}
-                        />
-                      </div>
-                      {errors[`codice_${dosimetro.id}`] && (
-                        <p className="text-sm text-destructive">{errors[`codice_${dosimetro.id}`]}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Piano</Label>
-                      <Input
-                        value={dosimetro.piano}
-                        onChange={(e) => handleDosimetroChange(dosimetro.id, 'piano', e.target.value)}
-                        placeholder="Piano"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Ubicazione</Label>
-                      <Input
-                        value={dosimetro.ubicazione}
-                        onChange={(e) => handleDosimetroChange(dosimetro.id, 'ubicazione', e.target.value)}
-                        placeholder="Ubicazione"
-                      />
-                    </div>
-                  </div>
-                  
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Foto (1-3 foto) *</Label>
+                    <Label>Misurazione Fase 1 (Bq/m³)</Label>
                     <Input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={(e) => handleFotoChange(dosimetro.id, e.target.files)}
-                      className={errors[`foto_${dosimetro.id}`] ? 'border-destructive' : ''}
+                      type="number"
+                      value={reading.misurazione1}
+                      disabled
+                      className="bg-muted"
                     />
-                    {errors[`foto_${dosimetro.id}`] && (
-                      <p className="text-sm text-destructive">{errors[`foto_${dosimetro.id}`]}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Misurazione Fase 2 (Bq/m³) *</Label>
+                    <Input
+                      type="number"
+                      value={reading.misurazione2}
+                      onChange={(e) => handleReadingChange(reading.id, e.target.value)}
+                      placeholder="Inserisci valore"
+                      className={errors[`reading_${reading.id}`] ? 'border-destructive' : ''}
+                    />
+                    {errors[`reading_${reading.id}`] && (
+                      <p className="text-sm text-destructive">{errors[`reading_${reading.id}`]}</p>
                     )}
-                    {dosimetro.foto.length > 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        {dosimetro.foto.length} foto selezionate: {dosimetro.foto.map(f => f.name).join(', ')}
-                      </div>
-                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Media (Bq/m³)</Label>
+                    <div className="h-10 px-3 rounded-md border bg-primary/10 flex items-center font-semibold">
+                      {calculateAverage(reading.misurazione1, reading.misurazione2)} Bq/m³
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -334,7 +270,6 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
         </div>
       </Card>
 
-      {/* Bottoni azione */}
       <Card className="max-w-4xl mx-auto p-6">
         <form onSubmit={handleSubmit}>
           <div className="flex gap-4">
@@ -352,7 +287,7 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
               className="flex-1 flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              Salva Posizionamento Fase 2
+              Completa Campagna
             </Button>
           </div>
         </form>
