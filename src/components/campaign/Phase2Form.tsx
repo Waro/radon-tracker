@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Package } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { BarcodeScanner } from "../BarcodeScanner";
 
 interface Phase2Data {
@@ -50,6 +51,7 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
       foto: []
     }))
   );
+  const [replacedDosimeters, setReplacedDosimeters] = useState<Set<number>>(new Set());
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleDosimetroChange = (id: number, field: keyof Dosimetro2, value: string) => {
@@ -60,22 +62,6 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
     );
   };
 
-  const addDosimetro = () => {
-    const newId = Math.max(...dosimetri.map(d => d.id)) + 1;
-    setDosimetri(prev => [...prev, { 
-      id: newId, 
-      codiceDispositivo2: '', 
-      piano: '',
-      ubicazione: '',
-      foto: []
-    }]);
-  };
-
-  const removeDosimetro = (id: number) => {
-    if (dosimetri.length > 1) {
-      setDosimetri(prev => prev.filter(d => d.id !== id));
-    }
-  };
 
   const handleFotoChange = (id: number, files: FileList | null) => {
     if (files) {
@@ -93,16 +79,22 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
     }
   };
 
+  const handleReplaceDosimeter = (id: number) => {
+    setReplacedDosimeters(prev => new Set([...prev, id]));
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    // Validazione dosimetri
+    // Validazione dosimetri sostituiti
     dosimetri.forEach(dosimetro => {
-      if (!dosimetro.codiceDispositivo2) {
-        newErrors[`codice_${dosimetro.id}`] = 'Campo obbligatorio';
-      }
-      if (dosimetro.foto.length === 0) {
-        newErrors[`foto_${dosimetro.id}`] = 'Almeno una foto è obbligatoria';
+      if (replacedDosimeters.has(dosimetro.id)) {
+        if (!dosimetro.codiceDispositivo2) {
+          newErrors[`codice_${dosimetro.id}`] = 'Campo obbligatorio';
+        }
+        if (dosimetro.foto.length === 0) {
+          newErrors[`foto_${dosimetro.id}`] = 'Almeno una foto è obbligatoria';
+        }
       }
     });
     
@@ -236,100 +228,139 @@ export const Phase2Form = ({ data, onChange, onBack, onSave, phase1Dosimetri }: 
       {/* Scheda Dosimetri */}
       <Card className="max-w-4xl mx-auto p-8">
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-foreground border-b border-border pb-2 flex-1">
-              Dosimetri Radon
-            </h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addDosimetro}
-              className="ml-4"
-            >
-              <Plus className="h-4 w-4" />
-              Aggiungi Dosimetro
-            </Button>
-          </div>
+          <h2 className="text-xl font-semibold text-foreground border-b border-border pb-2">
+            Dosimetri Radon - Sostituzione
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            I dosimetri della Fase 1 sono stati rimossi. Per ogni punto di misurazione, sostituisci con un nuovo dosimetro per la Fase 2.
+          </p>
 
           <div className="space-y-4">
-            {dosimetri.map((dosimetro) => (
-              <Card key={dosimetro.id} className="p-4 border-2">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-foreground">
-                    R{dosimetro.id}
-                  </h3>
-                  {dosimetri.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeDosimetro(dosimetro.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Codice Dispositivo 2 *</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={dosimetro.codiceDispositivo2}
-                          onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', e.target.value)}
-                          placeholder="Codice dispositivo"
-                          className={errors[`codice_${dosimetro.id}`] ? 'border-destructive' : ''}
-                        />
-                        <BarcodeScanner 
-                          onScan={(code) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', code)}
-                        />
-                      </div>
-                      {errors[`codice_${dosimetro.id}`] && (
-                        <p className="text-sm text-destructive">{errors[`codice_${dosimetro.id}`]}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Piano</Label>
-                      <Input
-                        value={dosimetro.piano}
-                        onChange={(e) => handleDosimetroChange(dosimetro.id, 'piano', e.target.value)}
-                        placeholder="Piano"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Ubicazione</Label>
-                      <Input
-                        value={dosimetro.ubicazione}
-                        onChange={(e) => handleDosimetroChange(dosimetro.id, 'ubicazione', e.target.value)}
-                        placeholder="Ubicazione"
-                      />
-                    </div>
+            {phase1Dosimetri.map((dosimetro, index) => {
+              const isReplaced = replacedDosimeters.has(dosimetro.id);
+              const dosimetro2 = dosimetri.find(d => d.id === dosimetro.id);
+              
+              return (
+                <Card key={dosimetro.id} className="p-4 border-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-medium text-foreground">
+                      R{dosimetro.id}
+                    </h3>
+                    {isReplaced && (
+                      <Badge variant="secondary" className="ml-2">
+                        Sostituito
+                      </Badge>
+                    )}
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label>Foto (1-3 foto) *</Label>
-                    <Input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={(e) => handleFotoChange(dosimetro.id, e.target.files)}
-                      className={errors[`foto_${dosimetro.id}`] ? 'border-destructive' : ''}
-                    />
-                    {errors[`foto_${dosimetro.id}`] && (
-                      <p className="text-sm text-destructive">{errors[`foto_${dosimetro.id}`]}</p>
-                    )}
-                    {dosimetro.foto.length > 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        {dosimetro.foto.length} foto selezionate: {dosimetro.foto.map(f => f.name).join(', ')}
+                  <div className="space-y-4">
+                    {/* Dosimetro Fase 1 - Bloccato */}
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <h4 className="text-sm font-medium mb-3 text-muted-foreground">Dosimetro Fase 1 (Rimosso)</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Codice Dispositivo 1</Label>
+                          <Input
+                            value={dosimetro.codiceDispositivo1}
+                            disabled
+                            className="bg-muted"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Piano</Label>
+                          <Input
+                            value={dosimetro.piano}
+                            disabled
+                            className="bg-muted"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Ubicazione</Label>
+                          <Input
+                            value={dosimetro.ubicazione}
+                            disabled
+                            className="bg-muted"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dosimetro Fase 2 - Sostituito */}
+                    {!isReplaced ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleReplaceDosimeter(dosimetro.id)}
+                        className="w-full"
+                      >
+                        <Package className="h-4 w-4 mr-2" />
+                        Sostituisci Dosimetro
+                      </Button>
+                    ) : (
+                      <div className="p-3 border-2 border-primary rounded-lg">
+                        <h4 className="text-sm font-medium mb-3">Nuovo Dosimetro Fase 2</h4>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <Label>Codice Dispositivo 2 *</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  value={dosimetro2?.codiceDispositivo2 || ''}
+                                  onChange={(e) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', e.target.value)}
+                                  placeholder="Codice dispositivo"
+                                  className={errors[`codice_${dosimetro.id}`] ? 'border-destructive' : ''}
+                                />
+                                <BarcodeScanner 
+                                  onScan={(code) => handleDosimetroChange(dosimetro.id, 'codiceDispositivo2', code)}
+                                />
+                              </div>
+                              {errors[`codice_${dosimetro.id}`] && (
+                                <p className="text-sm text-destructive">{errors[`codice_${dosimetro.id}`]}</p>
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Piano</Label>
+                              <Input
+                                value={dosimetro2?.piano || dosimetro.piano}
+                                onChange={(e) => handleDosimetroChange(dosimetro.id, 'piano', e.target.value)}
+                                placeholder="Piano"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Ubicazione</Label>
+                              <Input
+                                value={dosimetro2?.ubicazione || dosimetro.ubicazione}
+                                onChange={(e) => handleDosimetroChange(dosimetro.id, 'ubicazione', e.target.value)}
+                                placeholder="Ubicazione"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Foto (1-3 foto) *</Label>
+                            <Input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={(e) => handleFotoChange(dosimetro.id, e.target.files)}
+                              className={errors[`foto_${dosimetro.id}`] ? 'border-destructive' : ''}
+                            />
+                            {errors[`foto_${dosimetro.id}`] && (
+                              <p className="text-sm text-destructive">{errors[`foto_${dosimetro.id}`]}</p>
+                            )}
+                            {dosimetro2 && dosimetro2.foto.length > 0 && (
+                              <div className="text-sm text-muted-foreground">
+                                {dosimetro2.foto.length} foto selezionate: {dosimetro2.foto.map(f => f.name).join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         </div>
       </Card>
