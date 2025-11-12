@@ -423,7 +423,7 @@ const CampaignDetail = () => {
                         <span>
                           <span className="text-muted-foreground">Inizio:</span> {new Date(phase.startDate).toLocaleDateString('it-IT')}
                         </span>
-                        {'endDate' in phase && phase.endDate && (
+                        {phaseKey !== 'positioning' && 'endDate' in phase && phase.endDate && (
                           <span>
                             <span className="text-muted-foreground">Fine:</span> {new Date(phase.endDate).toLocaleDateString('it-IT')}
                           </span>
