@@ -17,47 +17,7 @@ import { AvailableDosimetersDialog } from "@/components/AvailableDosimetersDialo
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock data - in a real app this would come from a database
-const mockCampaigns: RadonCampaign[] = [
-  {
-    id: '1',
-    name: 'Monitoraggio Scuola Elementare G. Verdi',
-    location: 'Milano, Via Larga 12',
-    startDate: '2025-09-15',
-    status: 'fase1',
-    riskLevel: 'low'
-  },
-  {
-    id: '2',
-    name: 'Controllo Uffici Comunali',
-    location: 'Torino, Corso Francia 89',
-    startDate: '2025-07-20',
-    status: 'fase2',
-    averageLevel: 95,
-    riskLevel: 'low'
-  },
-  {
-    id: '3',
-    name: 'Indagine Palazzo Storico',
-    location: 'Roma, Via dei Fori Imperiali 45',
-    startDate: '2025-03-10',
-    endDate: '2025-09-12',
-    status: 'awaiting',
-    averageLevel: 165,
-    riskLevel: 'medium'
-  },
-  {
-    id: '4',
-    name: 'Monitoraggio Complesso Residenziale',
-    location: 'Bologna, Via Zamboni 33',
-    startDate: '2024-11-01',
-    endDate: '2025-05-15',
-    status: 'completed',
-    averageLevel: 220,
-    riskLevel: 'high'
-  }
-];
+import { initializeCampaigns } from "@/data/initialCampaigns";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -72,26 +32,10 @@ const Index = () => {
   // Carica le campagne da localStorage all'avvio
   useEffect(() => {
     const loadCampaigns = () => {
-      const stored = localStorage.getItem('radon_campaigns');
-      console.log('📂 Caricamento campagne da localStorage');
-      console.log('📊 Dati grezzi localStorage:', stored);
-      
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          console.log('✅ Campagne parsate:', parsed);
-          console.log('📈 Numero di campagne:', parsed.length);
-          setCampaigns(parsed);
-        } catch (error) {
-          console.error('❌ Errore nel caricamento delle campagne:', error);
-          setCampaigns(mockCampaigns);
-        }
-      } else {
-        // Se non ci sono campagne salvate, usa i dati di esempio
-        console.log('⚠️ Nessuna campagna in localStorage, uso mockCampaigns');
-        setCampaigns(mockCampaigns);
-        localStorage.setItem('radon_campaigns', JSON.stringify(mockCampaigns));
-      }
+      // Inizializza sempre le campagne di default
+      const campaigns = initializeCampaigns();
+      console.log('✅ Campagne inizializzate:', campaigns);
+      setCampaigns(campaigns);
     };
 
     loadCampaigns();
