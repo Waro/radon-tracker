@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { ArrowLeft, Download, MapPin, CalendarDays, AlertTriangle, Activity, Package, FileText, MousePointerClick } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
@@ -27,26 +29,34 @@ const mockCampaignDetails = {
     riskLevel: 'medium' as const,
     currentPhase: 'phase2',
     phases: {
-      phase1: {
+      positioning: {
         name: 'Posizionamento Dosimetri',
         status: 'completed',
         startDate: '2024-01-15',
         endDate: '2024-01-20',
         description: 'Installazione dei dosimetri presso le abitazioni'
       },
-      phase2: {
+      monitoring: {
         name: 'Monitoraggio',
         status: 'active',
         startDate: '2024-01-21',
-        endDate: '2024-07-15',
-        description: 'Periodo di monitoraggio di 6 mesi'
+        description: 'Periodo di monitoraggio - Fase 1 e Fase 2',
+        phase1EndDate: '2024-07-15',
+        phase2EndDate: '2025-01-15'
       },
-      phase3: {
-        name: 'Ritiro e Analisi',
+      pickup: {
+        name: 'Ritiro',
         status: 'planned',
-        startDate: '2024-07-16',
-        endDate: '2024-08-15',
-        description: 'Ritiro dosimetri e analisi dei risultati'
+        startDate: '2025-01-16',
+        endDate: '2025-01-20',
+        description: 'Ritiro dei dosimetri'
+      },
+      analysis: {
+        name: 'Analisi e Risultati',
+        status: 'planned',
+        startDate: '2025-01-21',
+        endDate: '2025-02-15',
+        description: 'Analisi dei dosimetri e report finale'
       }
     },
     dosimeters: [
@@ -122,6 +132,7 @@ const CampaignDetail = () => {
   const [showCompletionDialog, setShowCompletionDialog] = useState(false);
   const [phase1Data, setPhase1Data] = useState<any>(null);
   const [phase2Data, setPhase2Data] = useState<any>(null);
+  const [showPhase1Dosimeters, setShowPhase1Dosimeters] = useState(true);
 
   const campaign = mockCampaignDetails[id as keyof typeof mockCampaignDetails];
 
@@ -350,8 +361,8 @@ const CampaignDetail = () => {
             <CardContent className="space-y-4">
               {Object.entries(campaign.phases).map(([phaseKey, phase]) => {
                 const isClickable = campaign.status === 'active' && 
-                  ((phaseKey === 'phase2' && phase.status === 'active') || 
-                   (phaseKey === 'phase3' && phase.status === 'planned'));
+                  ((phaseKey === 'monitoring' && phase.status === 'active') || 
+                   (phaseKey === 'analysis' && phase.status === 'planned'));
                 
                 return (
                   <div
@@ -371,166 +382,149 @@ const CampaignDetail = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">{phase.description}</p>
-                    <div className="flex items-center gap-4 text-sm">
-                      <span>
-                        <span className="text-muted-foreground">Inizio:</span> {new Date(phase.startDate).toLocaleDateString('it-IT')}
-                      </span>
-                      <span>
-                        <span className="text-muted-foreground">Fine:</span> {new Date(phase.endDate).toLocaleDateString('it-IT')}
-                      </span>
-                    </div>
+                    
+                    {phaseKey === 'monitoring' ? (
+                      <div className="mt-3 grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-muted/30 rounded-lg">
+                          <h4 className="font-medium text-sm mb-2">Fase 1</h4>
+                          <div className="space-y-1 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">Inizio:</span>
+                              <span className="ml-1">{new Date(phase.startDate).toLocaleDateString('it-IT')}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Fine:</span>
+                              <span className="ml-1">{new Date(campaign.phases.monitoring.phase1EndDate).toLocaleDateString('it-IT')}</span>
+                            </div>
+                            <div className="pt-1 text-muted-foreground">
+                              Durata: 6 mesi
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 bg-muted/30 rounded-lg">
+                          <h4 className="font-medium text-sm mb-2">Fase 2</h4>
+                          <div className="space-y-1 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">Inizio:</span>
+                              <span className="ml-1">{new Date(campaign.phases.monitoring.phase1EndDate).toLocaleDateString('it-IT')}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Fine:</span>
+                              <span className="ml-1">{new Date(campaign.phases.monitoring.phase2EndDate).toLocaleDateString('it-IT')}</span>
+                            </div>
+                            <div className="pt-1 text-muted-foreground">
+                              Durata: 6 mesi
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4 text-sm mt-2">
+                        <span>
+                          <span className="text-muted-foreground">Inizio:</span> {new Date(phase.startDate).toLocaleDateString('it-IT')}
+                        </span>
+                        {'endDate' in phase && phase.endDate && (
+                          <span>
+                            <span className="text-muted-foreground">Fine:</span> {new Date(phase.endDate).toLocaleDateString('it-IT')}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </CardContent>
           </Card>
 
-          {/* Dati Fase 1 e Fase 2 - Collassabili */}
-          <Accordion type="single" collapsible className="mb-8 space-y-4">
-            <AccordionItem value="phase1" className="border rounded-lg px-4">
-              <AccordionTrigger className="hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  <span className="font-semibold">Dati Fase 1 - Posizionamento</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pt-4">
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Data Inizio:</span>
-                      <span className="ml-1 font-medium">{new Date(campaign.startDate).toLocaleDateString('it-IT')}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Data Fine:</span>
-                      <span className="ml-1 font-medium">{new Date(campaign.phases.phase1.endDate).toLocaleDateString('it-IT')}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-medium mb-3">Tecnico Proj.Eco</h4>
-                      <div className="space-y-2 text-sm">
-                        <p><span className="text-muted-foreground">Nome:</span> Marco Rossi</p>
-                        <p><span className="text-muted-foreground">Cognome:</span> Rossi</p>
-                        <p><span className="text-muted-foreground">Firma:</span> M.Rossi</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-3">Referente Cliente</h4>
-                      <div className="space-y-2 text-sm">
-                        <p><span className="text-muted-foreground">Nome:</span> Anna Bianchi</p>
-                        <p><span className="text-muted-foreground">Cognome:</span> Bianchi</p>
-                        <p><span className="text-muted-foreground">Ruolo:</span> Responsabile Tecnico</p>
-                        <p><span className="text-muted-foreground">Firma:</span> A.Bianchi</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium mb-3">Dosimetri Installati Fase 1</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {campaign.dosimeters.map((dosimeter, index) => (
-                        <div key={dosimeter.id} className="p-4 border rounded-lg bg-muted/30">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-mono text-sm font-semibold">R{index + 1}</span>
-                            <span className="text-xs text-muted-foreground">Dispositivo 1</span>
-                          </div>
-                          <div className="space-y-1 text-sm">
-                            <p><span className="text-muted-foreground">Codice:</span> {dosimeter.id}</p>
-                            <p><span className="text-muted-foreground">Piano:</span> Piano Terra</p>
-                            <p><span className="text-muted-foreground">Ubicazione:</span> {dosimeter.room}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            {campaign.currentPhase === 'phase2' && (
-              <AccordionItem value="phase2" className="border rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    <span className="font-semibold">Dati Fase 2 - Posizionamento</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pt-4">
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Data Inizio:</span>
-                        <span className="ml-1 font-medium">{new Date(campaign.phases.phase2.startDate).toLocaleDateString('it-IT')}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Data Fine Prevista:</span>
-                        <span className="ml-1 font-medium">{calculatePickupDate(campaign.startDate)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">Tecnico Proj.Eco</h4>
-                        <div className="space-y-2 text-sm">
-                          <p><span className="text-muted-foreground">Nome:</span> Marco Rossi</p>
-                          <p><span className="text-muted-foreground">Cognome:</span> Rossi</p>
-                          <p><span className="text-muted-foreground">Firma:</span> M.Rossi</p>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Referente Cliente</h4>
-                        <div className="space-y-2 text-sm">
-                          <p><span className="text-muted-foreground">Nome:</span> Anna Bianchi</p>
-                          <p><span className="text-muted-foreground">Cognome:</span> Bianchi</p>
-                          <p><span className="text-muted-foreground">Ruolo:</span> Responsabile Tecnico</p>
-                          <p><span className="text-muted-foreground">Firma:</span> A.Bianchi</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
-          </Accordion>
-
-          {/* Dosimetri Overview */}
+          {/* Dosimetri Installati */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Dosimetri Installati ({campaign.dosimeters.length})
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Dosimetri Installati
+                </div>
+                <div className="flex items-center gap-3">
+                  <Label htmlFor="phase-toggle" className={!showPhase1Dosimeters ? "text-muted-foreground" : ""}>
+                    Fase 1
+                  </Label>
+                  <Switch
+                    id="phase-toggle"
+                    checked={!showPhase1Dosimeters}
+                    onCheckedChange={(checked) => setShowPhase1Dosimeters(!checked)}
+                  />
+                  <Label htmlFor="phase-toggle" className={showPhase1Dosimeters ? "text-muted-foreground" : ""}>
+                    Fase 2
+                  </Label>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {campaign.dosimeters.map((dosimeter, index) => (
-                  <div key={dosimeter.id} className="p-4 border rounded-lg bg-card">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-mono text-sm font-semibold">R{index + 1}</span>
-                      <Badge className={statusColors[dosimeter.status]}>
-                        {statusLabels[dosimeter.status]}
-                      </Badge>
-                    </div>
+              <div className="space-y-6">
+                {/* Date */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm pb-4 border-b">
+                  <div>
+                    <span className="text-muted-foreground">Data Inizio:</span>
+                    <span className="ml-1 font-medium">
+                      {showPhase1Dosimeters 
+                        ? new Date(campaign.startDate).toLocaleDateString('it-IT')
+                        : new Date(campaign.phases.monitoring.phase1EndDate).toLocaleDateString('it-IT')
+                      }
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Data Fine:</span>
+                    <span className="ml-1 font-medium">
+                      {showPhase1Dosimeters
+                        ? new Date(campaign.phases.monitoring.phase1EndDate).toLocaleDateString('it-IT')
+                        : new Date(campaign.phases.monitoring.phase2EndDate).toLocaleDateString('it-IT')
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                {/* Tecnici */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4 border-b">
+                  <div>
+                    <h4 className="font-medium mb-3">Tecnico Proj.Eco</h4>
                     <div className="space-y-2 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Stanza:</span>
-                        <span className="ml-1">{dosimeter.room}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Installato:</span>
-                        <span className="ml-1">{new Date(dosimeter.installDate).toLocaleDateString('it-IT')}</span>
-                      </div>
-                      {dosimeter.level && (
-                        <div className="pt-2 border-t">
-                          <span className="text-muted-foreground">Livello rilevato:</span>
-                          <span className="ml-1 font-semibold">{dosimeter.level} Bq/m³</span>
-                        </div>
-                      )}
+                      <p><span className="text-muted-foreground">Nome:</span> Marco Rossi</p>
+                      <p><span className="text-muted-foreground">Cognome:</span> Rossi</p>
+                      <p><span className="text-muted-foreground">Firma:</span> M.Rossi</p>
                     </div>
                   </div>
-                ))}
+                  <div>
+                    <h4 className="font-medium mb-3">Referente Cliente</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="text-muted-foreground">Nome:</span> Anna Bianchi</p>
+                      <p><span className="text-muted-foreground">Cognome:</span> Bianchi</p>
+                      <p><span className="text-muted-foreground">Ruolo:</span> Responsabile Tecnico</p>
+                      <p><span className="text-muted-foreground">Firma:</span> A.Bianchi</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dosimetri */}
+                <div>
+                  <h4 className="font-medium mb-3">
+                    Dosimetri {showPhase1Dosimeters ? 'Fase 1' : 'Fase 2'} ({campaign.dosimeters.length})
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {campaign.dosimeters.map((dosimeter, index) => (
+                      <div key={dosimeter.id} className="p-4 border rounded-lg bg-muted/30">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-mono text-sm font-semibold">R{index + 1}</span>
+                          <span className="text-xs text-muted-foreground">Dispositivo 1</span>
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          <p><span className="text-muted-foreground">Codice:</span> {dosimeter.id}</p>
+                          <p><span className="text-muted-foreground">Piano:</span> Piano Terra</p>
+                          <p><span className="text-muted-foreground">Ubicazione:</span> {dosimeter.room}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
